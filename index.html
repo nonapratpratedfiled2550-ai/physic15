@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ฟิสิกส์นิวเคลียร์และฟิสิกส์อนุภาค</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --panel: #10192b;
+    --panel-2: #162238;
+    --line: rgba(148, 176, 214, 0.18);
+    --text: #e7eef8;
+    --muted: #93a4bd;
+    --accent: #3ee0c5;
+    --accent-2: #7aa2ff;
+    --warn: #ffb020;
+    --hot: #ff5d73;
+    --proton: #ff4d6a;
+    --neutron: #4c8dff;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Leelawadee UI", Tahoma, "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 500px at 10% -10%, rgba(62, 224, 197, 0.14), transparent 50%),
+      radial-gradient(900px 500px at 100% 0%, rgba(122, 162, 255, 0.16), transparent 46%),
+      var(--bg);
+  }
+  button, input, select { font-family: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .shell {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 10px;
+  }
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    padding: 2px 6px;
+  }
+  .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+  .mark {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffd0d8, var(--proton) 42%, #1a2744 43%);
+    box-shadow: 0 0 0 6px rgba(76, 141, 255, 0.18);
+    flex: none;
+  }
+  h1 { font-size: 20px; line-height: 1.2; margin: 0; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  details.goals { color: var(--muted); font-size: 13px; max-width: 460px; }
+  details.goals summary { cursor: pointer; color: var(--accent); }
+  details.goals p { margin: 6px 0 0; line-height: 1.45; }
+  .app {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 340px;
+    gap: 12px;
+  }
+  .col {
+    min-height: 0;
+    overflow: auto;
+    background: rgba(16, 25, 43, 0.92);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+  }
+  .col h2 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .hint { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin: 0 0 10px; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .modes button, .seg button, .speeds button, .chips button, .actions button, .tiny button {
+    border: 1px solid var(--line);
+    background: #0e1728;
+    border-radius: 10px;
+    padding: 8px 8px;
+    line-height: 1.25;
+    font-size: 13px;
+  }
+  .modes button.on, .seg button.on, .speeds button.on, .chips button.on {
+    background: linear-gradient(180deg, rgba(62, 224, 197, 0.22), rgba(62, 224, 197, 0.08));
+    border-color: rgba(62, 224, 197, 0.7);
+    color: white;
+  }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .actions button.primary { background: var(--accent); color: #06231e; font-weight: 700; border: 0; }
+  .actions button.ghost { background: #243044; }
+  label.ctrl { display: block; margin: 10px 0 4px; font-size: 13px; }
+  label.ctrl output, .val { color: var(--accent); font-weight: 700; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  select, .texty {
+    width: 100%;
+    background: #0c1424;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13.5px;
+  }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 8px 0; line-height: 1.35; }
+  .group { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 960 / 560;
+    max-height: 62vh;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #070b12;
+    border: 1px solid var(--line);
+  }
+  body[data-mode="4"] .stage { aspect-ratio: 16 / 7; max-height: 300px; }
+  .stage canvas, .chart-wrap canvas { width: 100%; height: 100%; display: block; }
+  .eq {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #0c1424;
+    border: 1px solid var(--line);
+    line-height: 1.55;
+    font-size: 13.5px;
+  }
+  .eq b { color: var(--accent); }
+  .stats {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .stat {
+    background: #0c1424;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 0;
+  }
+  .stat .k { color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+  .stat .v {
+    font-size: 18px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    margin-top: 3px;
+    word-break: break-word;
+  }
+  .stat .s { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .chart-wrap { height: 248px; border-radius: 12px; overflow: hidden; background: #0b1220; border: 1px solid var(--line); }
+  .panel {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #0c1424;
+    border: 1px solid var(--line);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .warn {
+    border-color: rgba(255, 176, 32, 0.45);
+    background: rgba(255, 176, 32, 0.08);
+  }
+  .warn h2 { color: var(--warn); }
+  .iso { display: inline-flex; align-items: center; font-weight: 750; white-space: nowrap; }
+  .az { display: inline-flex; flex-direction: column; font-size: 0.68em; line-height: 1.05; margin-right: 1px; font-weight: 650; }
+  .az i { font-style: normal; }
+  .zoo { margin-top: 10px; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 10px; }
+  .sm {
+    display: grid;
+    grid-template-columns: 72px repeat(3, 1fr);
+    gap: 4px;
+    font-size: 12px;
+  }
+  .sm .hd, .sm button {
+    border-radius: 8px;
+    padding: 6px 4px;
+    text-align: center;
+    background: #0e1728;
+    border: 1px solid var(--line);
+  }
+  .sm .hd { color: var(--muted); }
+  .sm button small { display: block; color: var(--muted); font-size: 10px; }
+  .sm button.on { border-color: var(--accent); }
+  .slots { display: flex; gap: 8px; min-height: 74px; }
+  .slot {
+    flex: 1;
+    border: 1px dashed rgba(147, 164, 189, 0.45);
+    border-radius: 12px;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0c1424;
+    font-weight: 700;
+  }
+  .slot.over { border-color: var(--accent); }
+  .palette { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  .palette button { border-radius: 999px; padding: 6px 10px; font-weight: 700; }
+  .palette button.on { outline: 2px solid white; }
+  .const { margin-top: 8px; color: var(--muted); font-size: 12.5px; }
+  .const summary { cursor: pointer; color: var(--accent-2); }
+  @media (max-width: 1180px) {
+    .shell { height: auto; }
+    .app { grid-template-columns: 1fr; }
+    .col { overflow: visible; }
+    .stage { max-height: none; }
+    .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    header.top { flex-direction: column; align-items: flex-start; }
+    details.goals { max-width: none; }
+  }
+  @media (max-width: 720px) {
+    .zoo, .stats, .modes { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .sm { grid-template-columns: 64px repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body data-mode="1">
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>ฟิสิกส์นิวเคลียร์และฟิสิกส์อนุภาค</h1>
+        <div class="sub">สื่อจำลองเชิงโต้ตอบสำหรับมัธยมศึกษาตอนปลาย · คำนวณจากมวลนิวเคลียร์จริง</div>
+      </div>
+    </div>
+    <details class="goals">
+      <summary>เป้าหมายการเรียนรู้</summary>
+      <p>โครงสร้างนิวเคลียสและแรงนิวเคลียร์ · การสลายกัมมันตรังสีและครึ่งชีวิต · ส่วนพร่องมวล พลังงานยึดเหนี่ยว ฟิชชันและฟิวชัน · แบบจำลองมาตรฐาน ควาร์ก และปฏิอนุภาค</p>
+    </details>
+  </header>
+
+  <main class="app">
+    <section class="col" aria-label="แผงควบคุม">
+      <h2>โหมดการจำลอง</h2>
+      <div class="modes" id="modeBtns">
+        <button type="button" data-modebtn="1" class="on">1. การสลายตัว</button>
+        <button type="button" data-modebtn="2">2. พลังงานยึดเหนี่ยว</button>
+        <button type="button" data-modebtn="3">3. ฟิชชัน · ฟิวชัน</button>
+        <button type="button" data-modebtn="4">4. แบบจำลองมาตรฐาน</button>
+      </div>
+      <p class="hint" id="modeHelp"></p>
+      <div class="row actions">
+        <button type="button" class="primary" id="play">เล่น</button>
+        <button type="button" id="pause">หยุดชั่วคราว</button>
+        <button type="button" class="ghost" id="reset">เริ่มใหม่</button>
+      </div>
+      <div class="speeds row" role="group" aria-label="ความเร็วแอนิเมชัน">
+        <button type="button" data-speed="0.5">0.5×</button>
+        <button type="button" data-speed="1" class="on">1.0×</button>
+        <button type="button" data-speed="2">2.0×</button>
+      </div>
+
+      <div class="group" id="grp1">
+        <label class="ctrl">จำนวนนิวเคลียสเริ่มต้น N₀ <output id="n0Out">400</output> อะตอม</label>
+        <input id="n0" type="range" min="50" max="1000" step="50" value="400">
+        <label class="ctrl">ครึ่งชีวิตในแบบจำลอง T<sub>½</sub> <output id="thOut">10.0</output> วินาที</label>
+        <input id="th" type="range" min="1" max="60" step="1" value="10">
+        <label class="ctrl" for="decayType">ชนิดการสลายตัว</label>
+        <select id="decayType">
+          <option value="alpha">แอลฟา (α)</option>
+          <option value="betam">บีตาลบ (β⁻)</option>
+          <option value="betap">บีตาบวก (β⁺)</option>
+          <option value="gamma">แกมมา (γ)</option>
+        </select>
+        <label class="ctrl" for="shield">แผ่นกั้นลำรังสี</label>
+        <select id="shield">
+          <option value="none">ไม่มีแผ่นกั้น</option>
+          <option value="paper">กระดาษ — กั้น α</option>
+          <option value="al">อะลูมิเนียม — กั้น α และ β</option>
+          <option value="pb">ตะกั่ว — กั้น α, β และ γ</option>
+        </select>
+        <div class="row">
+          <button type="button" id="contamBtn">วางสารรังสีบนวัตถุ</button>
+        </div>
+        <p class="hint">ครึ่งชีวิตจริงถูกย่อให้สั้นลง เพื่อให้เห็นกราฟภายในเวลาไม่กี่วินาที ค่าจริงเขียนไว้ในแผงวิเคราะห์</p>
+      </div>
+
+      <div class="group" id="grp2" hidden>
+        <label class="ctrl" for="isoSelect">เลือกนิวเคลียส (H-1 ถึง Pu-239)</label>
+        <select id="isoSelect"></select>
+        <div class="chips row" id="presets"></div>
+        <p class="hint">คลิกจุดบนกราฟด้านขวาเพื่อเลือกนิวเคลียสใกล้เคียงได้</p>
+      </div>
+
+      <div class="group" id="grp3" hidden>
+        <div class="seg row">
+          <button type="button" id="btnFission" class="on">ฟิชชัน</button>
+          <button type="button" id="btnFusion">ฟิวชัน</button>
+        </div>
+        <div id="fuelWrap">
+          <label class="ctrl" for="fuelSelect">เชื้อเพลิงฟิชชัน</label>
+          <select id="fuelSelect">
+            <option value="U-235">ยูเรเนียม-235</option>
+            <option value="Pu-239">พลูโทเนียม-239</option>
+          </select>
+        </div>
+        <div id="fusWrap" hidden>
+          <label class="ctrl" for="fusSelect">ปฏิกิริยาฟิวชัน</label>
+          <select id="fusSelect">
+            <option value="DT">ดิวเทอเรียม + ทริเทียม → ฮีเลียม-4 + นิวตรอน</option>
+            <option value="DDn">ดิวเทอเรียม + ดิวเทอเรียม → ฮีเลียม-3 + นิวตรอน</option>
+            <option value="DDp">ดิวเทอเรียม + ดิวเทอเรียม → ทริเทียม + โปรตอน</option>
+          </select>
+        </div>
+        <div id="rodWrap">
+          <label class="ctrl">แท่งควบคุม <output id="rodOut">35</output>%</label>
+          <input id="rod" type="range" min="0" max="100" step="1" value="35">
+          <p class="hint">ยิ่งสอดมาก ยิ่งดูดกลืนนิวตรอน ปฏิกิริยาลูกโซ่ช้าลง น้ำในแกนปฏิกรณ์เป็นตัวหน่วง ซึ่งชะลอนิวตรอน คนละหน้าที่กับแท่งควบคุม</p>
+        </div>
+        <button type="button" id="fireBtn">ยิงนิวตรอน 1 ตัว</button>
+      </div>
+
+      <div class="group">
+        <label class="check"><input type="checkbox" id="showQuarks"> แสดงควาร์กภายในนิวคลีออน (u, d)</label>
+        <label class="check"><input type="checkbox" id="showRays" checked> แสดงลำแสงรังสีและเวกเตอร์พลังงาน (Q)</label>
+      </div>
+      <details class="const">
+        <summary>ค่าคงตัวที่ใช้</summary>
+        <p>1 u = 1.6605×10⁻²⁷ kg = 931.5 MeV/c²<br>
+        m<sub>p</sub> = 1.007276 u · m<sub>n</sub> = 1.008665 u · m<sub>e</sub> = 0.00054858 u<br>
+        R₀ = 1.2×10⁻¹⁵ m · 1 eV = 1.602×10⁻¹⁹ J · 1 Bq = 1 การสลาย/วินาที<br>
+        ln 2 ≈ 0.693</p>
+      </details>
+    </section>
+
+    <section class="col" aria-label="จอจำลอง">
+      <div class="stage" id="stage"><canvas id="sim"></canvas></div>
+      <div class="eq" id="equation"></div>
+      <div class="stats" id="stats">
+        <article class="stat"><div class="k" id="k0"></div><div class="v" id="v0"></div><div class="s" id="s0"></div></article>
+        <article class="stat"><div class="k" id="k1"></div><div class="v" id="v1"></div><div class="s" id="s1"></div></article>
+        <article class="stat"><div class="k" id="k2"></div><div class="v" id="v2"></div><div class="s" id="s2"></div></article>
+        <article class="stat"><div class="k" id="k3"></div><div class="v" id="v3"></div><div class="s" id="s3"></div></article>
+        <article class="stat"><div class="k" id="k4"></div><div class="v" id="v4"></div><div class="s" id="s4"></div></article>
+      </div>
+      <div id="zoo" hidden>
+        <div class="zoo">
+          <div>
+            <h2>ตารางแบบจำลองมาตรฐาน</h2>
+            <div class="sm" id="smGrid"></div>
+            <p class="hint" id="smNote">คลิกอนุภาคเพื่ออ่านบทบาทของมัน เฟอร์มิออนคือสสาร โบซอนคืออนุภาคนำแรง</p>
+          </div>
+          <div>
+            <h2>ประกอบแฮดรอน</h2>
+            <div class="seg row">
+              <button type="button" id="btnBaryon" class="on">แบริออน 3 ควาร์ก</button>
+              <button type="button" id="btnMeson">เมซอน คู่ควาร์ก</button>
+            </div>
+            <label class="check"><input type="checkbox" id="antiToggle"> แสดงปฏิควาร์ก</label>
+            <div class="palette" id="palette"></div>
+            <div class="slots" id="slots"></div>
+            <p class="hint">คลิกควาร์กแล้วคลิกช่อง หรือลากวาง คลิกช่องที่มีควาร์กอยู่เพื่อเอาออก</p>
+            <div class="row tiny" id="presetQs"></div>
+            <button type="button" id="betaBtn">จำลองการสลาย β⁻ ของนิวตรอน</button>
+            <div id="buildResult" class="panel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="col" aria-label="กราฟและวิเคราะห์">
+      <h2 id="chartTitle">กราฟ</h2>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+      <div class="panel" id="analysis"></div>
+      <div class="panel warn">
+        <h2>ความเข้าใจคลาดเคลื่อนที่พบบ่อย</h2>
+        <p id="myth"></p>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+const MP = 1.007276, MN = 1.008665, ME = 0.00054858, U2MEV = 931.5, R0 = 1.2;
+const LW = 960, LH = 560;
+
+const ISOTOPES = [
+  {id:"H-1",sym:"H",name:"ไฮโดรเจน-1",Z:1,A:1,mass:1.007825},
+  {id:"H-2",sym:"H",name:"ดิวเทอเรียม",Z:1,A:2,mass:2.014102},
+  {id:"H-3",sym:"H",name:"ทริเทียม",Z:1,A:3,mass:3.016049},
+  {id:"He-3",sym:"He",name:"ฮีเลียม-3",Z:2,A:3,mass:3.016029},
+  {id:"He-4",sym:"He",name:"ฮีเลียม-4",Z:2,A:4,mass:4.002603},
+  {id:"Li-6",sym:"Li",name:"ลิเทียม-6",Z:3,A:6,mass:6.015122},
+  {id:"Li-7",sym:"Li",name:"ลิเทียม-7",Z:3,A:7,mass:7.016004},
+  {id:"Be-9",sym:"Be",name:"เบริลเลียม-9",Z:4,A:9,mass:9.012183},
+  {id:"B-10",sym:"B",name:"โบรอน-10",Z:5,A:10,mass:10.012937},
+  {id:"B-11",sym:"B",name:"โบรอน-11",Z:5,A:11,mass:11.009305},
+  {id:"C-12",sym:"C",name:"คาร์บอน-12",Z:6,A:12,mass:12},
+  {id:"C-13",sym:"C",name:"คาร์บอน-13",Z:6,A:13,mass:13.003355},
+  {id:"C-14",sym:"C",name:"คาร์บอน-14",Z:6,A:14,mass:14.003242},
+  {id:"N-14",sym:"N",name:"ไนโตรเจน-14",Z:7,A:14,mass:14.003074},
+  {id:"O-16",sym:"O",name:"ออกซิเจน-16",Z:8,A:16,mass:15.994915},
+  {id:"F-19",sym:"F",name:"ฟลูออรีน-19",Z:9,A:19,mass:18.998403},
+  {id:"Ne-20",sym:"Ne",name:"นีออน-20",Z:10,A:20,mass:19.992440},
+  {id:"Na-23",sym:"Na",name:"โซเดียม-23",Z:11,A:23,mass:22.989769},
+  {id:"Mg-24",sym:"Mg",name:"แมกนีเซียม-24",Z:12,A:24,mass:23.985042},
+  {id:"Al-27",sym:"Al",name:"อะลูมิเนียม-27",Z:13,A:27,mass:26.981539},
+  {id:"Si-28",sym:"Si",name:"ซิลิคอน-28",Z:14,A:28,mass:27.976927},
+  {id:"P-31",sym:"P",name:"ฟอสฟอรัส-31",Z:15,A:31,mass:30.973762},
+  {id:"S-32",sym:"S",name:"กำมะถัน-32",Z:16,A:32,mass:31.972071},
+  {id:"Cl-35",sym:"Cl",name:"คลอรีน-35",Z:17,A:35,mass:34.968853},
+  {id:"Ar-40",sym:"Ar",name:"อาร์กอน-40",Z:18,A:40,mass:39.962383},
+  {id:"Ca-40",sym:"Ca",name:"แคลเซียม-40",Z:20,A:40,mass:39.962591},
+  {id:"Fe-56",sym:"Fe",name:"เหล็ก-56",Z:26,A:56,mass:55.934936},
+  {id:"Ni-62",sym:"Ni",name:"นิกเกิล-62",Z:28,A:62,mass:61.928345},
+  {id:"Cu-63",sym:"Cu",name:"ทองแดง-63",Z:29,A:63,mass:62.929598},
+  {id:"Kr-84",sym:"Kr",name:"คริปทอน-84",Z:36,A:84,mass:83.911497},
+  {id:"Sr-90",sym:"Sr",name:"สตรอนเชียม-90",Z:38,A:90,mass:89.907738},
+  {id:"Zr-90",sym:"Zr",name:"เซอร์โคเนียม-90",Z:40,A:90,mass:89.904704},
+  {id:"Mo-98",sym:"Mo",name:"โมลิบดีนัม-98",Z:42,A:98,mass:97.905408},
+  {id:"I-127",sym:"I",name:"ไอโอดีน-127",Z:53,A:127,mass:126.904473},
+  {id:"I-131",sym:"I",name:"ไอโอดีน-131",Z:53,A:131,mass:130.906124},
+  {id:"Cs-137",sym:"Cs",name:"ซีเซียม-137",Z:55,A:137,mass:136.90709},
+  {id:"Ba-137",sym:"Ba",name:"แบเรียม-137",Z:56,A:137,mass:136.905827},
+  {id:"Pb-208",sym:"Pb",name:"ตะกั่ว-208",Z:82,A:208,mass:207.976652},
+  {id:"Bi-209",sym:"Bi",name:"บิสมัท-209",Z:83,A:209,mass:208.980399},
+  {id:"Th-232",sym:"Th",name:"ทอเรียม-232",Z:90,A:232,mass:232.038054},
+  {id:"U-235",sym:"U",name:"ยูเรเนียม-235",Z:92,A:235,mass:235.04393},
+  {id:"U-238",sym:"U",name:"ยูเรเนียม-238",Z:92,A:238,mass:238.050788},
+  {id:"Pu-239",sym:"Pu",name:"พลูโทเนียม-239",Z:94,A:239,mass:239.052163}
+];
+
+const DECAYS = {
+  alpha: {
+    label: "แอลฟา α", ray: "alpha",
+    parent: {sym:"U",Z:92,A:238,mass:238.050788},
+    daughter: {sym:"Th",Z:90,A:234,mass:234.043601},
+    emits: [{sym:"He",Z:2,A:4,mass:4.002603,name:"α"}],
+    qExtra: 0,
+    realHalf: "4.47 พันล้านปี",
+    blurb: "นิวเคลียสหนักปล่อยแกนฮีเลียม-4 Z ลด 2 และ A ลด 4 ระยะทะลุทะลวงสั้น กระดาษกั้นได้"
+  },
+  betam: {
+    label: "บีตาลบ β⁻", ray: "beta-",
+    parent: {sym:"C",Z:6,A:14,mass:14.003242},
+    daughter: {sym:"N",Z:7,A:14,mass:14.003074},
+    emits: [],
+    qExtra: 0,
+    realHalf: "5,730 ปี",
+    blurb: "นิวตรอนเปลี่ยนเป็นโปรตอน Z เพิ่ม 1 แต่ A คงที่ พร้อมอิเล็กตรอนและแอนตินิวตริโน อะลูมิเนียมกั้นบีตาได้"
+  },
+  betap: {
+    label: "บีตาบวก β⁺", ray: "beta+",
+    parent: {sym:"C",Z:6,A:11,mass:11.011434},
+    daughter: {sym:"B",Z:5,A:11,mass:11.009305},
+    emits: [],
+    qExtra: 2 * ME,
+    realHalf: "20.3 นาที",
+    blurb: "โปรตอนเปลี่ยนเป็นนิวตรอน Z ลด 1 ค่า Q ต้องหักพลังงานสร้างคู่อิเล็กตรอน–โพซิตรอน 2mₑc²"
+  },
+  gamma: {
+    label: "แกมมา γ", ray: "gamma",
+    parent: {sym:"Ni",Z:28,A:60,mass:59.930786},
+    daughter: {sym:"Ni",Z:28,A:60,mass:59.930786},
+    emits: [],
+    fixedQ: 1.332,
+    realHalf: "สถานะกระตุ้นสลายเกือบทันที (ต้นทาง Co-60 มีครึ่งชีวิต 5.27 ปี)",
+    blurb: "แกมมาคือโฟตอนพลังงานสูง Z และ A ไม่เปลี่ยน ระยะไกล ต้องใช้ตะกั่ว จึงไม่ทำให้วัตถุกลายเป็นสารรังสี"
+  }
+};
+
+const FISSION = {
+  "U-235": {
+    sym:"U", Z:92, A:235, mass:235.04393, nu:"ประมาณ 2.4",
+    channels: [
+      {a:{sym:"Ba",Z:56,A:141,mass:140.914411}, b:{sym:"Kr",Z:36,A:92,mass:91.926156}, neutrons:3},
+      {a:{sym:"Xe",Z:54,A:140,mass:139.92164}, b:{sym:"Sr",Z:38,A:94,mass:93.915361}, neutrons:2}
+    ]
+  },
+  "Pu-239": {
+    sym:"Pu", Z:94, A:239, mass:239.052163, nu:"ประมาณ 2.9 ในเครื่องปฏิกรณ์จริง",
+    channels: [
+      {a:{sym:"Ba",Z:56,A:144,mass:143.922953}, b:{sym:"Sr",Z:38,A:94,mass:93.915361}, neutrons:2}
+    ]
+  }
+};
+
+const FUSION = {
+  DT: {
+    name:"D + T",
+    L:{sym:"H",Z:1,A:2,mass:2.014102,nucleons:["p","n"],tag:"D"},
+    R:{sym:"H",Z:1,A:3,mass:3.016049,nucleons:["p","n","n"],tag:"T"},
+    A:{sym:"He",Z:2,A:4,mass:4.002603,nucleons:["p","p","n","n"],tag:"He"},
+    B:{sym:"n",Z:0,A:1,mass:MN,nucleons:["n"],tag:"n"}
+  },
+  DDn: {
+    name:"D + D",
+    L:{sym:"H",Z:1,A:2,mass:2.014102,nucleons:["p","n"],tag:"D"},
+    R:{sym:"H",Z:1,A:2,mass:2.014102,nucleons:["p","n"],tag:"D"},
+    A:{sym:"He",Z:2,A:3,mass:3.016029,nucleons:["p","p","n"],tag:"He"},
+    B:{sym:"n",Z:0,A:1,mass:MN,nucleons:["n"],tag:"n"}
+  },
+  DDp: {
+    name:"D + D",
+    L:{sym:"H",Z:1,A:2,mass:2.014102,nucleons:["p","n"],tag:"D"},
+    R:{sym:"H",Z:1,A:2,mass:2.014102,nucleons:["p","n"],tag:"D"},
+    A:{sym:"H",Z:1,A:3,mass:3.016049,nucleons:["p","n","n"],tag:"T"},
+    B:{sym:"H",Z:1,A:1,mass:1.007825,nucleons:["p"],tag:"p"}
+  }
+};
+
+const QUARKS = {
+  u:{f:"u",name:"อัพ",q:2/3,gen:1,color:"#ff5d73",mass:"2.2 MeV/c²"},
+  d:{f:"d",name:"ดาวน์",q:-1/3,gen:1,color:"#4c8dff",mass:"4.7 MeV/c²"},
+  c:{f:"c",name:"ชาร์ม",q:2/3,gen:2,color:"#ffb020",mass:"1.27 GeV/c²"},
+  s:{f:"s",name:"สเตรนจ์",q:-1/3,gen:2,color:"#c084fc",mass:"93 MeV/c²"},
+  t:{f:"t",name:"ท็อป",q:2/3,gen:3,color:"#ff7a59",mass:"173 GeV/c²"},
+  b:{f:"b",name:"บอตทอม",q:-1/3,gen:3,color:"#3ee0c5",mass:"4.18 GeV/c²"}
+};
+const LEPTONS = [
+  {id:"e",name:"อิเล็กตรอน",sym:"e",q:-1,gen:1,note:"เลปตอนมีประจุ รุ่นที่ 1 เป็นตัวที่อยู่ในอะตอม"},
+  {id:"nue",name:"นิวตริโนอิเล็กตรอน",sym:"νe",q:0,gen:1,note:"ประจุศูนย์ มวลน้อยมาก แทบไม่ทำปฏิกิริยากับสสาร"},
+  {id:"mu",name:"มิวออน",sym:"μ",q:-1,gen:2,note:"รุ่นที่ 2 หนักกว่าอิเล็กตรอน สลายตัวได้"},
+  {id:"numu",name:"นิวตริโนมิวออน",sym:"νμ",q:0,gen:2,note:"คู่ของมิวออน ไม่มีประจุ"},
+  {id:"tau",name:"เทา",sym:"τ",q:-1,gen:3,note:"เลปตอนหนักที่สุดในสามรุ่น"},
+  {id:"nutau",name:"นิวตริโนเทา",sym:"ντ",q:0,gen:3,note:"คู่ของเทา"}
+];
+const BOSONS = [
+  {id:"g",name:"กลูออน",sym:"g",q:"0",note:"นำแรงนิวเคลียร์อย่างเข้ม ยึดควาร์กไว้ในแฮดรอน มี 8 ชนิด"},
+  {id:"ph",name:"โฟตอน",sym:"γ",q:"0",note:"นำแรงแม่เหล็กไฟฟ้า รังสีแกมมาก็คือโฟตอนพลังงานสูง"},
+  {id:"W",name:"โบซอน W",sym:"W±",q:"±1",note:"นำแรงอย่างอ่อน ที่เปลี่ยนชนิดควาร์ก เช่น d → u ในการสลายบีตา"},
+  {id:"Z",name:"โบซอน Z",sym:"Z",q:"0",note:"นำแรงอย่างอ่อน แต่ไม่เปลี่ยนประจุ"},
+  {id:"H",name:"ฮิกส์",sym:"H",q:"0",note:"เกี่ยวข้องกับการที่อนุภาคมูลฐานมีมวล สปิน 0"}
+];
+
+const state = {
+  mode: 1, playing: false, speed: 1, showQuarks: false, showRays: true,
+  N0: 400, half: 10, decayType: "alpha", shield: "none",
+  isoId: "Fe-56", kind: "fission", fuelId: "U-235", fusId: "DT", control: 35,
+  hadron: "baryon", showAnti: false, picked: null, slots: [null, null, null],
+  sm: null
+};
+
+const decay = { cells: [], rays: [], t: 0, sample: 0, events: [], history: [], contaminated: false, irradiations: 0 };
+const fission = { fuel: [], neutrons: [], frags: [], pops: [], t: 0, sample: 0, energy: 0, count: 0, history: [], last: null, flashes: [] };
+const fusion = { phase: "ready", t: 0, energy: 0, count: 0, lastQ: 0, history: [], sample: 0, simt: 0 };
+const beta = { on: false, t: 0 };
+let visT = 0, lastTs = 0;
+const layoutCache = new Map();
+const stars = Array.from({length: 48}, (_, i) => ({
+  x: (i * 97) % LW, y: (i * 53) % LH, a: 0.04 + (i % 5) * 0.025
+}));
+
+const $ = (id) => document.getElementById(id);
+
+function isoHTML(sym, A, Z) {
+  return `<span class="iso"><span class="az"><i>${A}</i><i>${Z}</i></span>${sym}</span>`;
+}
+function fmt(x, d) {
+  if (!isFinite(x)) return "—";
+  return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtU(x) {
+  const a = Math.abs(x);
+  const d = a >= 1 ? 4 : a >= 0.01 ? 5 : 6;
+  return x.toFixed(d);
+}
+function fmtE(x) {
+  const a = Math.abs(x);
+  if (a >= 100) return x.toFixed(1);
+  if (a >= 10) return x.toFixed(2);
+  if (a >= 1) return x.toFixed(2);
+  return x.toFixed(3);
+}
+function joule(mev) { return mev * 1.602e-13; }
+function fmtJ(mev) {
+  const j = joule(mev);
+  if (!isFinite(j) || mev === 0) return "0 J";
+  return j.toExponential(2) + " J";
+}
+function findIso(id) { return ISOTOPES.find((d) => d.id === id) || ISOTOPES[0]; }
+
+function nucleusInfo(iso) {
+  const R = R0 * Math.cbrt(iso.A);
+  if (iso.A === 1 && iso.Z === 1) return { dm: 0, BE: 0, BEa: 0, R, mNuc: MP, sum: MP };
+  const mNuc = iso.mass - iso.Z * ME;
+  const sum = iso.Z * MP + (iso.A - iso.Z) * MN;
+  const dm = sum - mNuc;
+  const BE = dm * U2MEV;
+  return { dm, BE, BEa: BE / iso.A, R, mNuc, sum };
+}
+function reactionQ(reactMasses, prodMasses) {
+  const mr = reactMasses.reduce((a, b) => a + b, 0);
+  const mp = prodMasses.reduce((a, b) => a + b, 0);
+  const dm = mr - mp;
+  return { dm, Q: dm * U2MEV };
+}
+function decayQ(def) {
+  if (def.fixedQ != null) return { dm: def.fixedQ / U2MEV, Q: def.fixedQ, fixed: true };
+  const prod = [def.daughter.mass, ...def.emits.map((e) => e.mass)];
+  const extra = def.qExtra || 0;
+  const dm = def.parent.mass - prod.reduce((a, b) => a + b, 0) - extra;
+  return { dm, Q: dm * U2MEV, fixed: false };
+}
+function channelQ(fuel, ch) {
+  const prod = [ch.a.mass, ch.b.mass];
+  for (let i = 0; i < ch.neutrons; i++) prod.push(MN);
+  return reactionQ([fuel.mass, MN], prod);
+}
+function fusionQ(fx) {
+  return reactionQ([fx.L.mass, fx.R.mass], [fx.A.mass, fx.B.mass]);
+}
+function valleyZ(A) {
+  if (A <= 1) return 1;
+  const z = A / (1.98 + 0.0155 * Math.pow(A, 2 / 3));
+  return Math.max(1, Math.min(A - 1, Math.round(z)));
+}
+function semfBE(Z, A) {
+  const aV = 15.8, aS = 18.3, aC = 0.714, aA = 23.2, ap = 12;
+  const pair = (A % 2) ? 0 : (Z % 2 === 0 ? 1 : -1) * ap / Math.sqrt(A);
+  return aV * A - aS * Math.pow(A, 2 / 3) - aC * Z * (Z - 1) / Math.pow(A, 1 / 3) - aA * Math.pow(A - 2 * Z, 2) / A + pair;
+}
+const SEMF = [];
+for (let A = 2; A <= 240; A++) {
+  const Z = valleyZ(A);
+  const be = semfBE(Z, A);
+  if (be > 0) SEMF.push({ A, y: be / A });
+}
+function stability(iso) {
+  const N = iso.A - iso.Z;
+  const ratio = iso.Z ? N / iso.Z : 0;
+  const zS = valleyZ(iso.A);
+  let band;
+  if (iso.A === 1) band = "โปรตอนเดี่ยว ไม่มีพลังงานยึดเหนี่ยวระหว่างนิวคลีออน";
+  else if (iso.Z > 82 && iso.A > 200) band = "นิวเคลียสหนักมาก แรงผลักคูลอมบ์สูง มักสลายแบบแอลฟา";
+  else if (iso.Z < zS - 1) band = "นิวตรอนมากเกินเมื่อเทียบกับหุบเสถียร มีแนวโน้มสลายแบบ β⁻";
+  else if (iso.Z > zS + 1) band = "โปรตอนมากเกิน มีแนวโน้มสลายแบบ β⁺ หรือจับอิเล็กตรอน";
+  else band = "อยู่ใกล้หุบเสถียรภาพของนิวเคลียส";
+  return { N, ratio, zS, band };
+}
+
+function unitLayout(Z, A) {
+  const key = Z + ":" + A;
+  if (layoutCache.has(key)) return layoutCache.get(key);
+  const flags = [];
+  for (let i = 0; i < A; i++) flags.push(i < Z);
+  for (let i = flags.length - 1; i > 0; i--) {
+    const j = (i * 17 + Z) % (i + 1);
+    const tmp = flags[i]; flags[i] = flags[j]; flags[j] = tmp;
+  }
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  const pts = flags.map((p, i) => {
+    const r = Math.sqrt((i + 0.5) / A);
+    const th = i * golden;
+    return { rx: r * Math.cos(th), ry: r * Math.sin(th), p };
+  });
+  layoutCache.set(key, pts);
+  return pts;
+}
+
+function resetDecay() {
+  decay.cells = Array.from({ length: state.N0 }, () => ({ alive: true }));
+  decay.rays = [];
+  decay.t = 0;
+  decay.sample = 0;
+  decay.events = [];
+  decay.irradiations = 0;
+  decay.contaminated = false;
+  const lambda = Math.LN2 / state.half;
+  decay.history = [{ t: 0, N: state.N0, A: lambda * state.N0, Am: 0, theory: state.N0 }];
+  $("contamBtn").textContent = "วางสารรังสีบนวัตถุ";
+}
+function resetFission() {
+  fission.fuel = [];
+  const cols = 6, rows = 4;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) fission.fuel.push({ c, r, cols, rows, alive: true });
+  fission.neutrons = [];
+  fission.frags = [];
+  fission.pops = [];
+  fission.flashes = [];
+  fission.t = 0;
+  fission.sample = 0;
+  fission.energy = 0;
+  fission.count = 0;
+  fission.last = null;
+  fission.history = [{ t: 0, E: 0, n: 0 }];
+}
+function resetFusion() {
+  fusion.phase = "ready";
+  fusion.t = 0;
+  fusion.energy = 0;
+  fusion.count = 0;
+  fusion.lastQ = 0;
+  fusion.simt = 0;
+  fusion.sample = 0;
+  fusion.history = [{ t: 0, E: 0, n: 0 }];
+}
+function resetCurrent() {
+  if (state.mode === 1) resetDecay();
+  if (state.mode === 3 && state.kind === "fission") resetFission();
+  if (state.mode === 3 && state.kind === "fusion") resetFusion();
+  if (state.mode === 4) { beta.on = false; beta.t = 0; }
+}
+
+function coreGeom() { return { x: 150, y: 78, w: 660, h: 400 }; }
+function fuelXY(f) {
+  const g = coreGeom();
+  const cw = g.w / f.cols, rh = g.h / f.rows;
+  return { x: g.x + (f.c + 0.5) * cw, y: g.y + (f.r + 0.5) * rh, rad: Math.min(cw, rh) * 0.3 };
+}
+function spawnNeutron(x, y, vx, vy) {
+  if (fission.neutrons.length > 100) return;
+  fission.neutrons.push({ x, y, vx, vy, life: 0 });
+}
+function fireNeutron() {
+  const alive = fission.fuel.filter((f) => f.alive);
+  if (!alive.length) return;
+  const target = alive[Math.floor(Math.random() * alive.length)];
+  const p = fuelXY(target);
+  const x = 70, y = LH / 2 + (Math.random() - 0.5) * 80;
+  const ang = Math.atan2(p.y - y, p.x - x);
+  const sp = 120;
+  spawnNeutron(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp);
+}
+function doFission(cell, n) {
+  const fuel = FISSION[state.fuelId];
+  const ch = fuel.channels[Math.floor(Math.random() * fuel.channels.length)];
+  const q = channelQ(fuel, ch);
+  const p = fuelXY(cell);
+  cell.alive = false;
+  fission.count += 1;
+  fission.energy += q.Q;
+  fission.last = { ch, q };
+  const ang = Math.random() * Math.PI * 2;
+  fission.frags.push({ x: p.x, y: p.y, vx: Math.cos(ang) * 46, vy: Math.sin(ang) * 46, life: 0, tag: ch.a.sym + "-" + ch.a.A, col: "#ffb020" });
+  fission.frags.push({ x: p.x, y: p.y, vx: Math.cos(ang + Math.PI) * 42, vy: Math.sin(ang + Math.PI) * 42, life: 0, tag: ch.b.sym + "-" + ch.b.A, col: "#7aa2ff" });
+  if (n) {
+    const idx = fission.neutrons.indexOf(n);
+    if (idx >= 0) fission.neutrons.splice(idx, 1);
+  }
+  for (let i = 0; i < ch.neutrons; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = 80 + Math.random() * 50;
+    spawnNeutron(p.x, p.y, Math.cos(a) * sp, Math.sin(a) * sp);
+  }
+  fission.pops.push({ x: p.x, y: p.y, life: 0, text: "+" + fmtE(q.Q) + " MeV" });
+  fission.flashes.push({ x: p.x, y: p.y, life: 0 });
+}
+
+function stepDecay(dt) {
+  if (dt <= 0) return;
+  const lambda = Math.LN2 / state.half;
+  const p = 1 - Math.exp(-lambda * dt);
+  decay.t += dt;
+  for (let i = 0; i < decay.cells.length; i++) {
+    if (!decay.cells[i].alive) continue;
+    if (Math.random() < p) emitDecay(i);
+  }
+  if (decay.contaminated && Math.random() < p) emitFrom(860, 300, true);
+  stepRays(dt);
+  decay.sample += dt;
+  if (decay.sample >= 0.1) {
+    decay.sample = 0;
+    pushDecayHistory();
+  }
+}
+function aliveCount() { return decay.cells.reduce((a, c) => a + (c.alive ? 1 : 0), 0); }
+function pushDecayHistory() {
+  const lambda = Math.LN2 / state.half;
+  const N = aliveCount();
+  const recent = decay.events.filter((t) => decay.t - t <= 1);
+  const Am = decay.t <= 0 ? 0 : recent.length / Math.min(1, Math.max(decay.t, 1e-3));
+  decay.history.push({
+    t: decay.t, N, A: lambda * N, Am,
+    theory: state.N0 * Math.pow(0.5, decay.t / state.half)
+  });
+  if (decay.history.length > 4000) decay.history.splice(0, decay.history.length - 4000);
+}
+function layoutCell(i, n) {
+  const x0 = 28, y0 = 46, x1 = 630, y1 = 520;
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n * (x1 - x0) / (y1 - y0))));
+  const rows = Math.ceil(n / cols);
+  const cw = (x1 - x0) / cols, rh = (y1 - y0) / rows;
+  const c = i % cols, r = Math.floor(i / cols);
+  return { x: x0 + (c + 0.5) * cw, y: y0 + (r + 0.5) * rh, s: Math.min(cw, rh) };
+}
+function emitDecay(i) {
+  decay.cells[i].alive = false;
+  decay.events.push(decay.t);
+  const g = layoutCell(i, decay.cells.length);
+  emitFrom(g.x, g.y, false);
+}
+function emitFrom(x, y, fromObject) {
+  const def = DECAYS[state.decayType];
+  const toward = Math.random() < 0.55 ? (Math.random() * 0.9 - 0.45) : (Math.random() * Math.PI * 2);
+  const ang = fromObject ? Math.random() * Math.PI * 2 : toward;
+  const speed = def.ray === "alpha" ? 70 : def.ray === "gamma" ? 220 : 130;
+  const maxDist = def.ray === "alpha" ? 130 : def.ray === "gamma" ? 980 : 460;
+  decay.rays.push({ type: def.ray, x, y, x0: x, y0: y, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, dist: 0, maxDist, stopped: false, hit: false, ignore: fromObject, life: 0 });
+  if (def.ray === "beta-" || def.ray === "beta+") {
+    const a2 = ang + 0.7;
+    decay.rays.push({ type: "neutrino", x, y, x0: x, y0: y, vx: Math.cos(a2) * 200, vy: Math.sin(a2) * 200, dist: 0, maxDist: 1000, stopped: false, hit: false, ignore: true, life: 0 });
+  }
+}
+function shieldsBlock(type) {
+  const s = state.shield;
+  if (s === "none" || type === "neutrino") return false;
+  if (type === "alpha") return true;
+  if (type === "beta-" || type === "beta+") return s === "al" || s === "pb";
+  if (type === "gamma") return s === "pb";
+  return false;
+}
+function stepRays(dt) {
+  const shieldX = 700;
+  const slab = { x: 760, y: 150, w: 170, h: 280 };
+  for (let i = decay.rays.length - 1; i >= 0; i--) {
+    const r = decay.rays[i];
+    r.life += dt;
+    if (!r.stopped) {
+      const prev = r.x;
+      const nx = r.x + r.vx * dt, ny = r.y + r.vy * dt;
+      r.dist += Math.hypot(nx - r.x, ny - r.y);
+      if ((prev - shieldX) * (nx - shieldX) < 0 && shieldsBlock(r.type)) {
+        r.x = shieldX; r.y = ny; r.stopped = true;
+      } else {
+        r.x = nx; r.y = ny;
+      }
+      if (!r.hit && !r.ignore && r.type !== "neutrino" && r.x > slab.x && r.x < slab.x + slab.w && r.y > slab.y && r.y < slab.y + slab.h) {
+        r.hit = true;
+        decay.irradiations += 1;
+      }
+    }
+    if (r.stopped && r.life > 0.8) decay.rays.splice(i, 1);
+    else if (r.dist > r.maxDist || r.x < -20 || r.x > LW + 20 || r.y < -20 || r.y > LH + 20) decay.rays.splice(i, 1);
+    else if (decay.rays.length > 500) decay.rays.splice(i, 1);
+  }
+}
+
+function stepFission(dt) {
+  if (dt <= 0) return;
+  fission.t += dt;
+  const g = coreGeom();
+  const ctrl = state.control / 100;
+  for (let i = fission.neutrons.length - 1; i >= 0; i--) {
+    const n = fission.neutrons[i];
+    n.life += dt;
+    n.x += n.vx * dt;
+    n.y += n.vy * dt;
+    let gone = false;
+    const rods = rodRects(g);
+    for (const rod of rods) {
+      if (n.x > rod.x && n.x < rod.x + rod.w && n.y > rod.y && n.y < rod.y + rod.h) {
+        fission.flashes.push({ x: n.x, y: n.y, life: 0, bad: true });
+        gone = true; break;
+      }
+    }
+    if (!gone && Math.random() < Math.pow(ctrl, 1.15) * dt * 1.7) {
+      fission.flashes.push({ x: n.x, y: n.y, life: 0, bad: true });
+      gone = true;
+    }
+    if (!gone) {
+      for (const f of fission.fuel) {
+        if (!f.alive) continue;
+        const p = fuelXY(f);
+        if (Math.hypot(n.x - p.x, n.y - p.y) < p.rad + 12) {
+          doFission(f, n);
+          gone = true;
+          break;
+        }
+      }
+    }
+    if (!gone && Math.random() < (1 - ctrl) * dt * 0.65) {
+      let best = null, bd = 1e9;
+      for (const f of fission.fuel) {
+        if (!f.alive) continue;
+        const p = fuelXY(f);
+        const d = Math.hypot(n.x - p.x, n.y - p.y);
+        if (d < bd) { bd = d; best = p; }
+      }
+      if (best) {
+        const ang = Math.atan2(best.y - n.y, best.x - n.x);
+        const sp = Math.hypot(n.vx, n.vy) || 90;
+        n.vx = Math.cos(ang) * sp;
+        n.vy = Math.sin(ang) * sp;
+      }
+    }
+    if (!gone) {
+      if (n.x < g.x || n.x > g.x + g.w || n.y < g.y || n.y > g.y + g.h) {
+        if (Math.random() < 0.72) {
+          if (n.x < g.x || n.x > g.x + g.w) n.vx *= -1;
+          if (n.y < g.y || n.y > g.y + g.h) n.vy *= -1;
+          n.x = Math.max(g.x + 2, Math.min(g.x + g.w - 2, n.x));
+          n.y = Math.max(g.y + 2, Math.min(g.y + g.h - 2, n.y));
+        } else gone = true;
+      }
+    }
+    if (!gone && n.life > 14) gone = true;
+    if (gone && fission.neutrons[i] === n) fission.neutrons.splice(i, 1);
+  }
+  for (let i = fission.frags.length - 1; i >= 0; i--) {
+    const f = fission.frags[i];
+    f.life += dt; f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= 0.98; f.vy *= 0.98;
+    if (f.life > 1.6) fission.frags.splice(i, 1);
+  }
+  for (let i = fission.pops.length - 1; i >= 0; i--) {
+    fission.pops[i].life += dt; fission.pops[i].y -= 16 * dt;
+    if (fission.pops[i].life > 1.3) fission.pops.splice(i, 1);
+  }
+  for (let i = fission.flashes.length - 1; i >= 0; i--) {
+    fission.flashes[i].life += dt;
+    if (fission.flashes[i].life > 0.35) fission.flashes.splice(i, 1);
+  }
+  fission.sample += dt;
+  if (fission.sample >= 0.15) {
+    fission.sample = 0;
+    fission.history.push({ t: fission.t, E: fission.energy, n: fission.neutrons.length });
+    if (fission.history.length > 3000) fission.history.shift();
+  }
+}
+function rodRects(g) {
+  const n = 4, depth = (state.control / 100) * g.h, gap = g.w / n;
+  const rods = [];
+  for (let i = 0; i < n; i++) rods.push({ x: g.x + gap * (i + 0.5) - 7, y: g.y, w: 14, h: depth });
+  return rods;
+}
+
+function stepFusion(dt) {
+  if (dt <= 0) return;
+  fusion.t += dt;
+  fusion.simt += dt;
+  const dur = { ready: 0.35, approach: 2.05, flash: 0.45, fly: 2.1, hold: 0.9 };
+  if (fusion.t >= dur[fusion.phase]) {
+    fusion.t = 0;
+    const order = ["ready", "approach", "flash", "fly", "hold"];
+    const i = order.indexOf(fusion.phase);
+    fusion.phase = order[(i + 1) % order.length];
+    if (fusion.phase === "flash") {
+      const q = fusionQ(FUSION[state.fusId]);
+      fusion.lastQ = q.Q;
+      fusion.energy += q.Q;
+      fusion.count += 1;
+    }
+  }
+  fusion.sample += dt;
+  if (fusion.sample >= 0.15) {
+    fusion.sample = 0;
+    const neutrons = (state.fusId === "DDp") ? 0 : fusion.count;
+    fusion.history.push({ t: fusion.simt, E: fusion.energy, n: neutrons });
+    if (fusion.history.length > 3000) fusion.history.shift();
+  }
+}
+function stepBeta(dt) {
+  if (!beta.on || dt < 0) return;
+  beta.t += dt;
+  if (beta.t > 7.2) beta.on = false;
+}
+
+function fit(canvas) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(10, rect.width), h = Math.max(10, rect.height);
+  if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function worldTransform(ctx, w, h) {
+  const s = Math.min(w / LW, h / LH);
+  const ox = (w - LW * s) / 2, oy = (h - LH * s) / 2;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  ctx.setTransform(dpr * s, 0, 0, dpr * s, ox * dpr, oy * dpr);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function resetDraw(ctx) {
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([]);
+}
+function drawBG(ctx) {
+  resetDraw(ctx);
+  const g = ctx.createLinearGradient(0, 0, 0, LH);
+  g.addColorStop(0, "#10182a");
+  g.addColorStop(1, "#070b12");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, LW, LH);
+  for (const s of stars) {
+    ctx.fillStyle = "rgba(255,255,255," + s.a + ")";
+    ctx.fillRect(s.x, s.y, 1.6, 1.6);
+  }
+}
+function drawQuarkCluster(ctx, x, y, r, proton) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = proton ? "rgba(255,77,106,0.18)" : "rgba(76,141,255,0.18)";
+  ctx.fill();
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = proton ? "#ff4d6a" : "#4c8dff";
+  ctx.stroke();
+  const qs = proton ? ["u", "u", "d"] : ["u", "d", "d"];
+  const cols = { u: "#ff8fa3", d: "#9cc2ff" };
+  for (let k = 0; k < 3; k++) {
+    const a = -Math.PI / 2 + k * (Math.PI * 2 / 3) + visT * 0.8;
+    const qx = x + Math.cos(a) * r * 0.48, qy = y + Math.sin(a) * r * 0.48;
+    ctx.beginPath();
+    ctx.arc(qx, qy, Math.max(3.2, r * 0.22), 0, Math.PI * 2);
+    ctx.fillStyle = cols[qs[k]];
+    ctx.fill();
+    if (r > 12) {
+      ctx.fillStyle = "#102";
+      ctx.font = "bold " + Math.max(8, r * 0.34) + "px Tahoma";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(qs[k], qx, qy + 0.5);
+    }
+  }
+}
+function drawNucleon(ctx, x, y, r, proton, quarks) {
+  if (quarks && r >= 7) { drawQuarkCluster(ctx, x, y, r, proton); return; }
+  const grd = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+  if (proton) { grd.addColorStop(0, "#ffd0d8"); grd.addColorStop(1, "#ff4d6a"); }
+  else { grd.addColorStop(0, "#d6e6ff"); grd.addColorStop(1, "#4c8dff"); }
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = grd;
+  ctx.fill();
+}
+
+function drawDecay(ctx) {
+  drawBG(ctx);
+  const n = decay.cells.length;
+  const def = DECAYS[state.decayType];
+  for (let i = 0; i < n; i++) {
+    const g = layoutCell(i, n);
+    const rad = Math.max(2.2, Math.min(14, g.s * 0.36));
+    const cell = decay.cells[i];
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, rad, 0, Math.PI * 2);
+    if (cell.alive) {
+      ctx.fillStyle = state.decayType === "gamma" ? "#c084fc" : "#3ee0c5";
+    } else ctx.fillStyle = "rgba(120,138,160,0.35)";
+    ctx.fill();
+  }
+  if (state.showRays) {
+    for (const r of decay.rays) drawRay(ctx, r);
+  }
+  const shieldX = 700;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(shieldX, 40); ctx.lineTo(shieldX, 520); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#d5deea";
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.textAlign = "center";
+  const shieldName = { none: "ไม่มีแผ่นกั้น", paper: "กระดาษ", al: "อะลูมิเนียม", pb: "ตะกั่ว" }[state.shield];
+  ctx.fillText(shieldName, shieldX, 28);
+
+  roundRect(ctx, 760, 150, 170, 280, 16);
+  ctx.fillStyle = decay.contaminated ? "rgba(255,93,115,0.16)" : "rgba(62,224,197,0.08)";
+  ctx.fill();
+  ctx.strokeStyle = decay.contaminated ? "#ff5d73" : "rgba(62,224,197,0.5)";
+  ctx.stroke();
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "15px Leelawadee UI, Tahoma";
+  ctx.fillText("วัตถุตัวอย่าง", 845, 190);
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  wrapText(ctx, decay.contaminated ? "ปนเปื้อน มีสารรังสีอยู่บนวัตถุ" : "ถูกฉายรังสีได้ แต่ยังไม่ปนเปื้อน", 778, 220, 140, 18);
+  ctx.fillStyle = "#ffb020";
+  ctx.font = "12px Leelawadee UI, Tahoma";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText("ถูกยิง " + decay.irradiations + " ครั้ง", 845, 390);
+  if (decay.contaminated) {
+    ctx.beginPath();
+    ctx.arc(845, 330, 10, 0, Math.PI * 2);
+    ctx.fillStyle = "#ff5d73";
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 11px Tahoma";
+    ctx.fillText("R", 845, 331);
+  }
+
+  resetDraw(ctx);
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "16px Leelawadee UI, Tahoma";
+  ctx.fillText(def.label + "   t = " + fmt(decay.t, 1) + " s", 24, 28);
+  const halves = decay.t / state.half;
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#ffd166";
+  const status = (!state.playing && decay.t === 0)
+    ? "กดเล่น เพื่อเริ่มการสลายแบบสุ่ม   เหลือ " + state.N0 + " / " + state.N0
+    : "ผ่านไป " + fmt(halves, 2) + " ครึ่งชีวิต   เหลือ " + aliveCount() + " / " + state.N0;
+  ctx.fillText(status, 24, 548);
+}
+function drawRay(ctx, r) {
+  const col = { alpha: "#ffd166", "beta-": "#5ce1ff", "beta+": "#ff8bd2", gamma: "#d8b4fe", neutrino: "rgba(180,210,255,0.45)" }[r.type] || "#fff";
+  if (r.type === "gamma" || r.type === "neutrino") {
+    ctx.beginPath();
+    const steps = 16;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const x = r.x0 + (r.x - r.x0) * t;
+      const y = r.y0 + (r.y - r.y0) * t;
+      const dx = r.x - r.x0, dy = r.y - r.y0;
+      const len = Math.hypot(dx, dy) || 1;
+      const px = -dy / len, py = dx / len;
+      const amp = r.type === "gamma" ? 4 : 2;
+      const ox = px * Math.sin(t * 18 + visT * 10) * amp;
+      const oy = py * Math.sin(t * 18 + visT * 10) * amp;
+      if (i === 0) ctx.moveTo(x + ox, y + oy); else ctx.lineTo(x + ox, y + oy);
+    }
+    ctx.strokeStyle = col;
+    ctx.lineWidth = r.type === "gamma" ? 1.6 : 1;
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.type === "alpha" ? 5 : 3, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    if (r.type === "alpha") {
+      ctx.fillStyle = "#3a2a00";
+      ctx.font = "bold 8px Tahoma";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("α", r.x, r.y + 0.4);
+    }
+  }
+  if (r.stopped) {
+    ctx.fillStyle = "#ffb020";
+    ctx.font = "11px Leelawadee UI, Tahoma";
+    ctx.textAlign = "left";
+    ctx.fillText("ถูกกั้น", r.x + 6, r.y);
+  }
+}
+function wrapText(ctx, text, x, y, maxW, lh) {
+  const words = text.split(" ");
+  let line = "";
+  ctx.textAlign = "left";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y); y += lh; line = w;
+    } else line = test;
+  }
+  if (line) ctx.fillText(line, x, y);
+}
+
+function drawBinding(ctx) {
+  drawBG(ctx);
+  const iso = findIso(state.isoId);
+  const info = nucleusInfo(iso);
+  const cx = 470, cy = 300;
+  const R = Math.max(46, Math.min(210, 28 + info.R * 22));
+  const pts = unitLayout(iso.Z, iso.A);
+  const nr = Math.max(3.1, Math.min(16, R * 1.45 / Math.sqrt(iso.A)));
+  const positions = pts.map((p, i) => {
+    const j = state.playing ? Math.sin(visT * 2.2 + i) * 1.1 : 0;
+    return { x: cx + p.rx * R + j, y: cy + p.ry * R, p: p.p, ru: Math.hypot(p.rx, p.ry) };
+  });
+  ctx.beginPath();
+  ctx.arc(cx, cy, R + nr + 8, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.setLineDash([4, 6]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#93a4bd";
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.textAlign = "left";
+  ctx.fillText("R = " + info.R.toFixed(2) + " fm", cx + R * 0.2, cy - R - 18);
+
+  if (state.showRays && iso.A > 1 && iso.A <= 90) {
+    ctx.lineWidth = 1;
+    let links = 0;
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        const d = Math.hypot(positions[i].x - positions[j].x, positions[i].y - positions[j].y);
+        if (d < nr * 2.55) {
+          ctx.strokeStyle = "rgba(62,224,197,0.35)";
+          ctx.beginPath();
+          ctx.moveTo(positions[i].x, positions[i].y);
+          ctx.lineTo(positions[j].x, positions[j].y);
+          ctx.stroke();
+          if (++links > 80) break;
+        }
+      }
+      if (links > 80) break;
+    }
+  }
+  const quarksInside = state.showQuarks && iso.A <= 20;
+  for (const p of positions) drawNucleon(ctx, p.x, p.y, nr, p.p, quarksInside);
+  if (state.showRays) {
+    positions.filter((p) => p.p && p.ru > 0.62).slice(0, 14).forEach((p) => {
+      const ang = Math.atan2(p.y - cy, p.x - cx);
+      const x1 = p.x + Math.cos(ang) * (nr + 2);
+      const y1 = p.y + Math.sin(ang) * (nr + 2);
+      const x2 = x1 + Math.cos(ang) * 16;
+      const y2 = y1 + Math.sin(ang) * 16;
+      ctx.strokeStyle = "#ff5d73";
+      ctx.fillStyle = "#ff5d73";
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x2, y2, 2.2, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+  if (state.showQuarks && iso.A > 20) {
+    roundRect(ctx, 24, 390, 250, 140, 12);
+    ctx.fillStyle = "rgba(8,12,22,0.82)";
+    ctx.fill();
+    ctx.fillStyle = "#e7eef8";
+    ctx.font = "13px Leelawadee UI, Tahoma";
+    ctx.textAlign = "left";
+    ctx.fillText("ขยายนิวคลีออน", 40, 412);
+    drawQuarkCluster(ctx, 80, 470, 28, true);
+    drawQuarkCluster(ctx, 180, 470, 28, false);
+    ctx.fillStyle = "#ff8fa3";
+    ctx.fillText("โปรตอน uud", 48, 516);
+    ctx.fillStyle = "#9cc2ff";
+    ctx.fillText("นิวตรอน udd", 140, 516);
+  }
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "22px Leelawadee UI, Tahoma";
+  ctx.fillText(iso.A + " " + iso.sym + "   " + iso.name, 24, 36);
+  ctx.font = "14px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  ctx.fillText("Z = " + iso.Z + "   N = " + (iso.A - iso.Z) + "   BE/A = " + (iso.A === 1 ? "0" : fmt(info.BEa, 3)) + " MeV", 24, 58);
+  ctx.fillStyle = "#ff8fa3";
+  ctx.fillRect(24, 78, 12, 12);
+  ctx.fillStyle = "#9cc2ff";
+  ctx.fillRect(120, 78, 12, 12);
+  ctx.fillStyle = "#d5deea";
+  ctx.fillText("โปรตอน", 40, 89);
+  ctx.fillText("นิวตรอน", 136, 89);
+  if (state.showRays) ctx.fillText("เส้นสีฟ้าอมเขียว: แรงนิวเคลียร์ระยะสั้น   ลูกศรแดง: แรงผลักคูลอมบ์", 24, 112);
+}
+
+function drawFission(ctx) {
+  drawBG(ctx);
+  const g = coreGeom();
+  roundRect(ctx, g.x, g.y, g.w, g.h, 18);
+  const water = ctx.createLinearGradient(g.x, g.y, g.x, g.y + g.h);
+  water.addColorStop(0, "rgba(60,120,180,0.28)");
+  water.addColorStop(1, "rgba(20,50,90,0.38)");
+  ctx.fillStyle = water;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(150,190,230,0.35)";
+  ctx.stroke();
+  ctx.fillStyle = "#9cc2ff";
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.textAlign = "left";
+  ctx.fillText("ตัวหน่วง: น้ำ  (ชะลอนิวตรอน)", g.x + 12, g.y - 10);
+
+  for (const rod of rodRects(g)) {
+    roundRect(ctx, rod.x, rod.y, rod.w, Math.max(rod.h, 0), 4);
+    ctx.fillStyle = "rgba(40,48,60,0.92)";
+    ctx.fill();
+    ctx.strokeStyle = "#ffb020";
+    ctx.stroke();
+  }
+  const fuel = FISSION[state.fuelId];
+  for (const f of fission.fuel) {
+    const p = fuelXY(f);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.rad, 0, Math.PI * 2);
+    if (f.alive) {
+      const grd = ctx.createRadialGradient(p.x - 4, p.y - 4, 2, p.x, p.y, p.rad);
+      grd.addColorStop(0, "#ffe1a8");
+      grd.addColorStop(1, "#e07a2f");
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.fillStyle = "#3a2208";
+      ctx.font = "bold 11px Tahoma";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(fuel.sym, p.x, p.y - 1);
+      ctx.font = "9px Tahoma";
+      ctx.fillText(String(fuel.A), p.x, p.y + 10);
+    } else {
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.stroke();
+    }
+  }
+  for (const fr of fission.frags) {
+    ctx.globalAlpha = Math.max(0, 1 - fr.life / 1.6);
+    ctx.beginPath();
+    ctx.arc(fr.x, fr.y, 11, 0, Math.PI * 2);
+    ctx.fillStyle = fr.col;
+    ctx.fill();
+    ctx.fillStyle = "#102";
+    ctx.font = "10px Tahoma";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(fr.tag, fr.x, fr.y);
+    if (state.showRays) {
+      ctx.strokeStyle = "#ffb020";
+      ctx.beginPath();
+      ctx.moveTo(fr.x, fr.y);
+      ctx.lineTo(fr.x + fr.vx * 0.4, fr.y + fr.vy * 0.4);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  for (const n of fission.neutrons) {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#e8f7ff";
+    ctx.fill();
+    ctx.strokeStyle = "#5ce1ff";
+    ctx.stroke();
+  }
+  for (const fl of fission.flashes) {
+    ctx.beginPath();
+    ctx.arc(fl.x, fl.y, 8 + fl.life * 30, 0, Math.PI * 2);
+    ctx.strokeStyle = fl.bad ? "rgba(255,93,115," + (1 - fl.life / 0.35) + ")" : "rgba(255,208,120," + (1 - fl.life / 0.35) + ")";
+    ctx.stroke();
+  }
+  if (state.showRays) {
+    ctx.font = "bold 14px Leelawadee UI, Tahoma";
+    ctx.textAlign = "center";
+    for (const p of fission.pops) {
+      ctx.globalAlpha = Math.max(0, 1 - p.life / 1.3);
+      ctx.fillStyle = "#ffd166";
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.globalAlpha = 1;
+    }
+  }
+  const left = fission.fuel.filter((f) => f.alive).length;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "16px Leelawadee UI, Tahoma";
+  ctx.fillText("ฟิชชัน " + fuel.sym + "-" + fuel.A + "    เชื้อเพลิงเหลือ " + left + "    นิวตรอนอิสระ " + fission.neutrons.length, 24, 32);
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.fillStyle = critColor();
+  ctx.fillText(critLabel(), 24, 54);
+  if (!state.playing && fission.count === 0 && fission.neutrons.length === 0) {
+    ctx.fillStyle = "#93a4bd";
+    ctx.fillText("กดเล่น เพื่อยิงนิวตรอนลูกแรก หรือกดปุ่มยิงนิวตรอน", 24, 548);
+  }
+}
+function critLabel() {
+  const left = fission.fuel.filter((f) => f.alive).length;
+  if (left === 0) return "เชื้อเพลิงฟิชชันหมด";
+  if (fission.neutrons.length === 0 && fission.count > 0) return "ปฏิกิริยาหยุดแล้ว — ต่ำกว่าวิกฤต หรือนิวตรอนหลุดออกหมด";
+  if (state.control < 25 && fission.neutrons.length >= 3) return "เหนือวิกฤต — ลูกโซ่กำลังขยาย ลองสอดแท่งควบคุม";
+  if (state.control > 70) return "แท่งควบคุมสอดลึก — แนวโน้มต่ำกว่าวิกฤต";
+  if (fission.neutrons.length > 0) return "มีนิวตรอนเดินทางในแกน — ใกล้วิกฤต";
+  return "รอการยิงนิวตรอน";
+}
+function critColor() {
+  if (state.control < 25 && fission.neutrons.length >= 3) return "#ff5d73";
+  if (state.control > 70) return "#3ee0c5";
+  return "#ffb020";
+}
+
+function clusterAt(ctx, x, y, nucleons, scale) {
+  const n = nucleons.length;
+  const rad = 15 * scale;
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i * (Math.PI * 2 / n);
+    const spread = n === 1 ? 0 : 16 * scale;
+    const px = x + Math.cos(a) * spread;
+    const py = y + Math.sin(a) * spread;
+    drawNucleon(ctx, px, py, rad, nucleons[i] === "p", state.showQuarks);
+  }
+}
+function drawFusion(ctx) {
+  drawBG(ctx);
+  const fx = FUSION[state.fusId];
+  const q = fusionQ(fx);
+  let sep = 280;
+  if (fusion.phase === "approach") sep = 280 - 230 * Math.min(1, fusion.t / 2.05);
+  if (fusion.phase === "flash" || fusion.phase === "fly" || fusion.phase === "hold") sep = 50;
+  const y = 290;
+  const cx = 480;
+  if (fusion.phase === "fly" || fusion.phase === "hold") {
+    const fly = fusion.phase === "fly" ? fusion.t / 2.1 : 1;
+    clusterAt(ctx, cx - 40 - fly * 160, y - fly * 30, fx.A.nucleons, 1);
+    clusterAt(ctx, cx + 40 + fly * 190, y + fly * 20, fx.B.nucleons, 1);
+    labelAt(ctx, cx - 40 - fly * 160, y + 70, fx.A.tag + " " + fx.A.A);
+    labelAt(ctx, cx + 40 + fly * 190, y + 70, fx.B.tag);
+    if (state.showRays) {
+      drawArrow(ctx, cx - 20, y, cx - 20 - fly * 120, y - fly * 20, "#ffd166");
+      drawArrow(ctx, cx + 20, y, cx + 20 + fly * 140, y + fly * 16, "#ffd166");
+      ctx.fillStyle = "#ffd166";
+      ctx.font = "bold 18px Leelawadee UI, Tahoma";
+      ctx.textAlign = "center";
+      ctx.fillText("Q = " + fmtE(q.Q) + " MeV", cx, 120);
+    }
+  } else if (fusion.phase === "flash") {
+    ctx.beginPath();
+    ctx.arc(cx, y, 30 + fusion.t * 80, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,209,102," + (0.35 - fusion.t * 0.4) + ")";
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 20px Leelawadee UI, Tahoma";
+    ctx.textAlign = "center";
+    ctx.fillText("แรงนิวเคลียร์ชนะแรงคูลอมบ์", cx, y);
+  } else {
+    clusterAt(ctx, cx - sep / 2, y, fx.L.nucleons, 1);
+    clusterAt(ctx, cx + sep / 2, y, fx.R.nucleons, 1);
+    labelAt(ctx, cx - sep / 2, y + 64, fx.L.tag);
+    labelAt(ctx, cx + sep / 2, y + 64, fx.R.tag);
+    const close = sep < 120;
+    const col = close ? "#3ee0c5" : "#ff5d73";
+    const dir = close ? -1 : 1;
+    if (state.showRays) {
+      drawArrow(ctx, cx - sep / 2 + 28, y, cx - sep / 2 + 28 + dir * 36, y, col);
+      drawArrow(ctx, cx + sep / 2 - 28, y, cx + sep / 2 - 28 - dir * 36, y, col);
+    }
+    ctx.fillStyle = col;
+    ctx.font = "16px Leelawadee UI, Tahoma";
+    ctx.textAlign = "center";
+    ctx.fillText(close ? "แรงนิวเคลียร์ระยะสั้นเริ่มครอบงำ" : "แรงผลักคูลอมบ์ระหว่างประจุบวก", cx, 150);
+  }
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "16px Leelawadee UI, Tahoma";
+  ctx.fillText("ฟิวชัน " + fx.name + "    Q = " + fmtE(q.Q) + " MeV    สะสม " + fmtE(fusion.energy) + " MeV", 24, 32);
+  ctx.fillStyle = "#93a4bd";
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.fillText(state.playing ? "กำลังบังคับให้นิวเคลียสเข้าใกล้กัน" : "กดเล่น เพื่อบังคับให้หลอมรวม", 24, 548);
+}
+function labelAt(ctx, x, y, text) {
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "14px Leelawadee UI, Tahoma";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(text, x, y);
+}
+function drawArrow(ctx, x1, y1, x2, y2, color) {
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  const ang = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - 8 * Math.cos(ang - 0.4), y2 - 8 * Math.sin(ang - 0.4));
+  ctx.lineTo(x2 - 8 * Math.cos(ang + 0.4), y2 - 8 * Math.sin(ang + 0.4));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function quarkObj(id) {
+  const anti = id.startsWith("~");
+  const f = anti ? id.slice(1) : id;
+  const base = QUARKS[f];
+  return { f, anti, q: anti ? -base.q : base.q, name: (anti ? "ปฏิ" : "") + base.name, color: base.color, id };
+}
+function slotList() {
+  const n = state.hadron === "meson" ? 2 : 3;
+  return state.slots.slice(0, n).filter(Boolean);
+}
+function comboKey(list) {
+  return list.map((q) => (q.anti ? "~" : "") + q.f).sort().join(",");
+}
+const BARYON_INFO = {
+  "d,u,u": ["โปรตอน", "p", "1/2"],
+  "d,d,u": ["นิวตรอน", "n", "1/2"],
+  "u,u,u": ["เดลตาพลัสพลัส", "Δ++", "3/2"],
+  "d,d,d": ["เดลตามายนัส", "Δ−", "3/2"],
+  "s,u,u": ["ซิกมาพลัส", "Σ+", "1/2"],
+  "d,s,u": ["แลมบ์ดา หรือ ซิกมาศูนย์", "Λ / Σ⁰", "1/2"],
+  "d,d,s": ["ซิกมามายนัส", "Σ−", "1/2"],
+  "s,s,u": ["ไซศูนย์", "Ξ⁰", "1/2"],
+  "d,s,s": ["ไซมายนัส", "Ξ−", "1/2"],
+  "s,s,s": ["โอเมกาไมนัส", "Ω−", "3/2"]
+};
+function mesonMap() {
+  const pairs = [
+    ["u", "~d", "ไพออนพลัส", "π+", "0"],
+    ["d", "~u", "ไพออนไมนัส", "π−", "0"],
+    ["u", "~u", "ไพออนศูนย์", "π⁰", "0"],
+    ["d", "~d", "ไพออนศูนย์", "π⁰", "0"],
+    ["u", "~s", "เคออนพลัส", "K+", "0"],
+    ["s", "~u", "เคออนไมนัส", "K−", "0"],
+    ["d", "~s", "เคออนศูนย์", "K⁰", "0"],
+    ["s", "~d", "ปฏิเคออนศูนย์", "K̄⁰", "0"]
+  ];
+  const map = {};
+  for (const [a, b, name, sym, spin] of pairs) {
+    map[comboKey([quarkObj(a), quarkObj(b)])] = [name, sym, spin];
+  }
+  return map;
+}
+const MESON_INFO = mesonMap();
+function fmtCharge(q) {
+  const n = Math.round(q * 3);
+  const table = { 0: "0", 3: "+1", "-3": "−1", 1: "+1/3", "-1": "−1/3", 2: "+2/3", "-2": "−2/3", 6: "+2", "-6": "−2", 4: "+4/3", "-4": "−4/3", "-9": "−3", 9: "+3" };
+  return table[n] || (q > 0 ? "+" : "") + q.toFixed(2);
+}
+function identifySlots() {
+  const list = slotList();
+  if (!list.length) return { title: "ยังไม่ได้วางควาร์ก", detail: "ลองประกอบโปรตอนจาก uud หรือนิวตรอนจาก udd", ok: false, charge: 0, baryon: 0, spin: "—", kind: "—" };
+  const charge = list.reduce((a, q) => a + q.q, 0);
+  const bq = list.reduce((a, q) => a + (q.anti ? -1 : 1), 0) / 3;
+  const terms = list.map((q) => "(" + fmtCharge(q.q) + ")").join(" + ");
+  const hasT = list.some((q) => q.f === "t");
+  if (state.hadron === "meson") {
+    if (list.length < 2) return { title: "เมซอนต้องมี 2 ตัว", detail: "วางควาร์กหนึ่งตัวและปฏิควาร์กหนึ่งตัว", ok: false, charge, baryon: bq, spin: "—", kind: "ไม่ครบ", terms };
+    const antiN = list.filter((q) => q.anti).length;
+    if (antiN !== 1) return { title: "ยังไม่เป็นเมซอน", detail: "เมซอนเป็นควาร์กคู่กับปฏิควาร์ก จึงเป็นกลางทางสี ประจุรวม = " + terms + " = " + fmtCharge(charge), ok: false, charge, baryon: bq, spin: "—", kind: "ไม่เข้าคู่", terms };
+    const info = MESON_INFO[comboKey(list)];
+    const name = info ? info[0] : "เมซอนที่ไม่ได้ระบุชื่อในแบบฝึก";
+    const sym = info ? info[1] : "?";
+    const spin = info ? info[2] : "0 หรือ 1";
+    return { title: name + " (" + sym + ")", detail: "ประจุ " + terms + " = " + fmtCharge(charge) + (hasT ? " ควาร์กท็อปสลายตัวเร็วมาก ไม่สร้างแฮดรอนที่อยู่ได้นาน" : ""), ok: true, charge, baryon: bq, spin, kind: "เมซอน (แฮดรอน)", terms };
+  }
+  if (list.length < 3) return { title: "แบริออนต้องมี 3 ควาร์ก", detail: "วางให้ครบสามช่อง โปรตอนคือ uud นิวตรอนคือ udd", ok: false, charge, baryon: bq, spin: "—", kind: "ไม่ครบ", terms };
+  const antiN = list.filter((q) => q.anti).length;
+  if (antiN !== 0 && antiN !== 3) return { title: "ชุดนี้ปนควาร์กกับปฏิควาร์ก", detail: "แบริออนใช้ควาร์ก 3 ตัว หรือปฏิแบริออนใช้ปฏิควาร์ก 3 ตัว", ok: false, charge, baryon: bq, spin: "—", kind: "ไม่เข้าชุด", terms };
+  const flavors = list.map((q) => q.f).sort().join(",");
+  const info = BARYON_INFO[flavors];
+  let name = info ? info[0] : "แบริออนนอกตารางแบบฝึก";
+  let sym = info ? info[1] : "?";
+  let spin = info ? info[2] : "1/2 หรือ 3/2";
+  if (antiN === 3) { name = "ปฏิ" + name; sym = "ปฏิ" + sym; }
+  let extra = "";
+  if (flavors === "u,u,u" || flavors === "d,d,d" || flavors === "s,s,s") extra = " ควาร์กชนิดเดียวกันทั้งสามตัวอยู่รวมกันได้เมื่อสปินรวมเป็น 3/2";
+  if (hasT) extra += " ควาร์กท็อปสลายตัวเร็วมากก่อนจะรวมเป็นแฮดรอนที่เสถียร";
+  return { title: name + " (" + sym + ")", detail: "ประจุ " + terms + " = " + fmtCharge(charge) + extra, ok: true, charge, baryon: bq, spin, kind: antiN === 3 ? "ปฏิแบริออน (แฮดรอน)" : "แบริออน (แฮดรอน)", terms };
+}
+
+function drawZoo(ctx) {
+  drawBG(ctx);
+  if (beta.on) { drawBeta(ctx); return; }
+  const built = slotList();
+  if (!built.length && state.sm) { drawFocusParticle(ctx); return; }
+  const idn = identifySlots();
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "20px Leelawadee UI, Tahoma";
+  ctx.textAlign = "center";
+  ctx.fillText(idn.title, LW / 2, 64);
+  ctx.font = "14px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  ctx.fillText(idn.kind + (idn.ok ? "   สปิน " + idn.spin + "   เลขแบริออน " + fmtB(idn.baryon) : ""), LW / 2, 90);
+  if (!built.length) {
+    ctx.fillStyle = "#d5deea";
+    ctx.font = "16px Leelawadee UI, Tahoma";
+    ctx.fillText("ลากหรือคลิกควาร์กด้านล่าง เพื่อสร้างโปรตอน นิวตรอน หรือเมซอน", LW / 2, LH / 2);
+    return;
+  }
+  const cx = LW / 2, cy = 250;
+  built.forEach((q, i) => {
+    const a = -Math.PI / 2 + i * (Math.PI * 2 / built.length) + visT * 0.4;
+    const rad = built.length === 1 ? 0 : 78;
+    const x = cx + Math.cos(a) * rad, y = cy + Math.sin(a) * rad;
+    if (built.length > 1) {
+      ctx.strokeStyle = "rgba(255,209,102,0.55)";
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, 28, 0, Math.PI * 2);
+    ctx.fillStyle = q.color;
+    ctx.fill();
+    ctx.fillStyle = "#14080c";
+    ctx.font = "bold 16px Tahoma";
+    ctx.textBaseline = "middle";
+    ctx.fillText((q.anti ? "̄" : "") + q.f, x, y);
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#e7eef8";
+    ctx.font = "13px Leelawadee UI, Tahoma";
+    ctx.fillText(fmtCharge(q.q), x, y + 46);
+  });
+  if (built.length > 1) {
+    ctx.fillStyle = "#ffd166";
+    ctx.font = "13px Leelawadee UI, Tahoma";
+    ctx.fillText("เส้นประแทนกลูออน ที่ยึดควาร์กไว้", cx, 430);
+  }
+}
+function fmtB(b) {
+  if (Math.abs(b) < 0.01) return "0";
+  if (Math.abs(Math.abs(b) - 1) < 0.01) return b > 0 ? "+1" : "−1";
+  if (Math.abs(Math.abs(b) - 1 / 3) < 0.01) return b > 0 ? "+1/3" : "−1/3";
+  return b.toFixed(2);
+}
+function drawFocusParticle(ctx) {
+  const p = state.sm;
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "28px Leelawadee UI, Tahoma";
+  ctx.fillText(p.sym || p.name, LW / 2, 230);
+  ctx.font = "18px Leelawadee UI, Tahoma";
+  ctx.fillText(p.name, LW / 2, 270);
+  ctx.fillStyle = "#93a4bd";
+  ctx.font = "15px Leelawadee UI, Tahoma";
+  const note = p.note || "";
+  wrapCenter(ctx, note, LW / 2, 310, 520, 22);
+}
+function wrapCenter(ctx, text, cx, y, maxW, lh) {
+  ctx.textAlign = "center";
+  const words = text.split(" ");
+  let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, cx, y); y += lh; line = w; }
+    else line = test;
+  }
+  if (line) ctx.fillText(line, cx, y);
+}
+function drawBeta(ctx) {
+  const t = beta.t;
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "18px Leelawadee UI, Tahoma";
+  ctx.fillText("การสลายบีตาลบของนิวตรอน ผ่านแรงอย่างอ่อน", LW / 2, 42);
+  const become = t > 2.3;
+  const quarks = become ? [{f:"u",c:"#ff5d73"},{f:"u",c:"#ff5d73"},{f:"d",c:"#4c8dff"}] : [{f:"u",c:"#ff5d73"},{f:"d",c:"#4c8dff"},{f:"d",c:"#4c8dff"}];
+  quarks.forEach((q, i) => {
+    const x = 360 + i * 70;
+    ctx.beginPath();
+    ctx.arc(x, 180, 24, 0, Math.PI * 2);
+    ctx.fillStyle = q.c;
+    ctx.fill();
+    ctx.fillStyle = "#14080c";
+    ctx.font = "bold 16px Tahoma";
+    ctx.textBaseline = "middle";
+    ctx.fillText(q.f, x, 180);
+    ctx.textBaseline = "alphabetic";
+  });
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "16px Leelawadee UI, Tahoma";
+  ctx.fillText(become ? "โปรตอน uud" : "นิวตรอน udd", 430, 240);
+  if (t > 1.2 && t < 3.4) {
+    ctx.fillStyle = "#d6ff4a";
+    ctx.font = "bold 18px Tahoma";
+    ctx.fillText("W−", 620, 170);
+    ctx.strokeStyle = "#d6ff4a";
+    ctx.beginPath();
+    ctx.moveTo(500, 180);
+    ctx.lineTo(590, 160);
+    ctx.stroke();
+  }
+  if (t > 2.6) {
+    const fly = Math.min(1, (t - 2.6) / 2);
+    ctx.fillStyle = "#5ce1ff";
+    ctx.beginPath();
+    ctx.arc(640 + fly * 180, 220 + fly * 40, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = "14px Leelawadee UI, Tahoma";
+    ctx.fillText("e−", 640 + fly * 180, 250 + fly * 40);
+    ctx.fillStyle = "rgba(200,220,255,0.8)";
+    ctx.fillText("ν-bar", 600 + fly * 80, 120 - fly * 30);
+  }
+  ctx.fillStyle = "#ffd166";
+  ctx.font = "15px Leelawadee UI, Tahoma";
+  const msg = t < 1.2 ? "นิวตรอนประกอบจากควาร์ก udd" : t < 2.4 ? "ควาร์ก d ปล่อยโบซอน W− แล้วกลายเป็น u" : "W− สลายเป็นอิเล็กตรอนกับแอนตินิวตริโน ได้โปรตอน";
+  ctx.fillText(msg, LW / 2, 320);
+  ctx.fillStyle = "#93a4bd";
+  ctx.fillText("n → p + e− + แอนตินิวตริโน", LW / 2, 360);
+}
+
+function chartBox(w, h) { return { l: 52, r: 54, t: 16, b: 36, w, h, iw: w - 106, ih: h - 52 }; }
+function drawChart() {
+  const { ctx, w, h } = fit($("chart"));
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#0b1220";
+  ctx.fillRect(0, 0, w, h);
+  if (state.mode === 1) drawChartDecay(ctx, w, h);
+  else if (state.mode === 2) drawChartBE(ctx, w, h);
+  else if (state.mode === 3) drawChartReact(ctx, w, h);
+  else drawChartCharge(ctx, w, h);
+}
+function axes(ctx, b) {
+  ctx.strokeStyle = "rgba(255,255,255,0.16)";
+  ctx.strokeRect(b.l, b.t, b.iw, b.ih);
+}
+function ticks(min, max, count) {
+  const span = Math.max(1e-9, max - min);
+  const rough = span / count;
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+  const err = rough / pow;
+  const step = pow * (err >= 7 ? 10 : err >= 3 ? 5 : err >= 1.5 ? 2 : 1);
+  const start = Math.ceil(min / step) * step;
+  const out = [];
+  for (let v = start; v <= max + step * 0.01; v += step) out.push(Math.abs(v) < step * 1e-6 ? 0 : v);
+  return out;
+}
+function drawSeries(ctx, pts, xOf, yOf, color, dashed) {
+  if (pts.length < 2) return;
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const x = xOf(p), y = yOf(p);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash(dashed ? [5, 4] : []);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawChartDecay(ctx, w, h) {
+  const b = chartBox(w, h);
+  const T = state.half;
+  const tmax = Math.max(decay.t * 1.05, T * 4, 1);
+  const nmax = state.N0;
+  const amax = Math.max(0.001, (Math.LN2 / T) * state.N0 * 1.05);
+  axes(ctx, b);
+  const xOfT = (t) => b.l + (t / tmax) * b.iw;
+  const yN = (n) => b.t + b.ih - (n / nmax) * b.ih;
+  const yA = (a) => b.t + b.ih - (a / amax) * b.ih;
+  ctx.font = "11px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ticks(0, tmax, 5).forEach((t) => {
+    const x = xOfT(t);
+    ctx.fillText(fmt(t, tmax > 20 ? 0 : 1), x, h - 16);
+    ctx.strokeStyle = "rgba(255,255,255,0.05)";
+    ctx.beginPath(); ctx.moveTo(x, b.t); ctx.lineTo(x, b.t + b.ih); ctx.stroke();
+  });
+  ctx.textAlign = "right";
+  ticks(0, nmax, 4).forEach((v) => ctx.fillText(fmt(v, 0), b.l - 6, yN(v) + 3));
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#ffb020";
+  ticks(0, amax, 4).forEach((v) => ctx.fillText(fmt(v, amax < 10 ? 1 : 0), b.l + b.iw + 6, yA(v) + 3));
+  for (let k = 1; k <= 4; k++) {
+    if (k * T <= tmax) {
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(xOfT(k * T), b.t);
+      ctx.lineTo(xOfT(k * T), b.t + b.ih);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#d5deea";
+      ctx.textAlign = "center";
+      ctx.fillText((k === 1 ? "" : k) + "T½", xOfT(k * T), b.t + 12);
+    }
+  }
+  const theory = [];
+  for (let i = 0; i <= 80; i++) {
+    const t = (tmax * i) / 80;
+    theory.push({ t, N: state.N0 * Math.pow(0.5, t / T) });
+  }
+  drawSeries(ctx, theory, (p) => xOfT(p.t), (p) => yN(p.N), "rgba(255,255,255,0.45)", true);
+  drawSeries(ctx, decay.history, (p) => xOfT(p.t), (p) => yN(p.N), "#3ee0c5", false);
+  drawSeries(ctx, decay.history, (p) => xOfT(p.t), (p) => yA(p.A), "#ffb020", false);
+  ctx.textAlign = "right";
+  ctx.textBaseline = "alphabetic";
+  const legendX = b.l + b.iw - 8;
+  ctx.fillStyle = "#3ee0c5"; ctx.fillText("N สุ่ม", legendX, b.t + 16);
+  ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.fillText("N ทฤษฎี", legendX, b.t + 30);
+  ctx.fillStyle = "#ffb020"; ctx.fillText("A = λN", legendX, b.t + 44);
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ctx.fillText("เวลา t (s)", b.l + b.iw / 2, h - 2);
+}
+function drawChartBE(ctx, w, h) {
+  const b = chartBox(w, h);
+  const xmax = 250, ymax = 10;
+  axes(ctx, b);
+  const xOf = (A) => b.l + (A / xmax) * b.iw;
+  const yOf = (v) => b.t + b.ih - (v / ymax) * b.ih;
+  ctx.font = "11px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ticks(0, xmax, 5).forEach((v) => ctx.fillText(String(Math.round(v)), xOf(v), h - 16));
+  ctx.textAlign = "right";
+  ticks(0, ymax, 5).forEach((v) => ctx.fillText(String(v), b.l - 6, yOf(v) + 3));
+  drawSeries(ctx, SEMF, (p) => xOf(p.A), (p) => yOf(p.y), "rgba(122,162,255,0.85)", false);
+  const fe = nucleusInfo(findIso("Fe-56"));
+  ctx.strokeStyle = "rgba(255,209,102,0.7)";
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(xOf(56), b.t);
+  ctx.lineTo(xOf(56), b.t + b.ih);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#ffd166";
+  ctx.textAlign = "left";
+  ctx.fillText("Fe-56", xOf(56) + 4, yOf(fe.BEa) - 8);
+  for (const iso of ISOTOPES) {
+    if (iso.A < 2) continue;
+    const info = nucleusInfo(iso);
+    ctx.beginPath();
+    ctx.arc(xOf(iso.A), yOf(info.BEa), iso.id === state.isoId ? 5 : 2.4, 0, Math.PI * 2);
+    ctx.fillStyle = iso.id === state.isoId ? "#ff5d73" : "#3ee0c5";
+    ctx.fill();
+  }
+  ctx.fillStyle = "#7aa2ff";
+  ctx.textAlign = "left";
+  ctx.fillText("เส้น: แนวโน้มนิวเคลียสเสถียร", b.l + 8, b.t + 16);
+  ctx.fillStyle = "#3ee0c5";
+  ctx.fillText("จุด: ไอโซโทปในตาราง", b.l + 8, b.t + 30);
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ctx.fillText("เลขมวล A", b.l + b.iw / 2, h - 2);
+  ctx.textAlign = "left";
+  ctx.save();
+  ctx.translate(14, b.t + b.ih / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText("BE/A (MeV)", 0, 0);
+  ctx.restore();
+}
+function drawChartReact(ctx, w, h) {
+  const hist = state.kind === "fission" ? fission.history : fusion.history;
+  const b = chartBox(w, h);
+  const tmax = Math.max(1, (hist.length ? hist[hist.length - 1].t : 1) * 1.05);
+  const emax = Math.max(10, ...hist.map((p) => p.E)) * 1.1;
+  const nmax = Math.max(2, ...hist.map((p) => p.n), 1);
+  axes(ctx, b);
+  const xOf = (t) => b.l + (t / tmax) * b.iw;
+  const yE = (v) => b.t + b.ih - (v / emax) * b.ih;
+  const yN = (v) => b.t + b.ih - (v / nmax) * b.ih;
+  ctx.font = "11px Leelawadee UI, Tahoma";
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ticks(0, tmax, 4).forEach((t) => ctx.fillText(fmt(t, 1), xOf(t), h - 16));
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#ffb020";
+  ticks(0, emax, 4).forEach((v) => ctx.fillText(fmt(v, 0), b.l - 6, yE(v) + 3));
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#5ce1ff";
+  ticks(0, nmax, 4).forEach((v) => ctx.fillText(fmt(v, 0), b.l + b.iw + 6, yN(v) + 3));
+  drawSeries(ctx, hist, (p) => xOf(p.t), (p) => yE(p.E), "#ffb020", false);
+  drawSeries(ctx, hist, (p) => xOf(p.t), (p) => yN(p.n), "#5ce1ff", false);
+  ctx.fillStyle = "#ffb020";
+  ctx.fillText("พลังงานสะสม (MeV)", b.l + 8, b.t + 16);
+  ctx.fillStyle = "#5ce1ff";
+  ctx.fillText(state.kind === "fission" ? "นิวตรอนอิสระ" : "จำนวนครั้งที่ปล่อยนิวตรอนสะสม", b.l + 8, b.t + 32);
+  ctx.fillStyle = "#93a4bd";
+  ctx.textAlign = "center";
+  ctx.fillText("เวลาในแบบจำลอง (s)", b.l + b.iw / 2, h - 2);
+}
+function drawChartCharge(ctx, w, h) {
+  const list = slotList();
+  ctx.fillStyle = "#93a4bd";
+  ctx.font = "13px Leelawadee UI, Tahoma";
+  ctx.textAlign = "left";
+  if (!list.length) {
+    ctx.fillText("วางควาร์กเพื่อดูว่าประจุแต่ละตัวรวมกันได้อย่างไร", 16, 40);
+    return;
+  }
+  const b = { l: 16, t: 20, w: w - 32 };
+  const total = list.reduce((a, q) => a + q.q, 0);
+  let x = b.l;
+  const width = b.w;
+  const maxAbs = Math.max(1, ...list.map((q) => Math.abs(q.q)), Math.abs(total));
+  list.forEach((q) => {
+    const ww = (Math.abs(q.q) / (list.reduce((a, item) => a + Math.abs(item.q), 0) || 1)) * width;
+    ctx.fillStyle = q.color;
+    ctx.fillRect(x, 70, Math.max(8, ww - 4), 36);
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px Tahoma";
+    ctx.textAlign = "center";
+    ctx.fillText((q.anti ? "anti-" : "") + q.f, x + ww / 2, 92);
+    x += ww;
+  });
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#e7eef8";
+  ctx.font = "15px Leelawadee UI, Tahoma";
+  ctx.fillText("ประจุรวม = " + fmtCharge(total), 16, 140);
+  ctx.fillStyle = "#93a4bd";
+  ctx.font = "12px Leelawadee UI, Tahoma";
+  ctx.fillText("ความยาวแท่งเทียบตามขนาดประจุของแต่ละควาร์ก", 16, 164);
+}
+
+function setCard(i, k, v, s) {
+  $("k" + i).textContent = k;
+  $("v" + i).textContent = v;
+  $("s" + i).textContent = s;
+}
+let lastEq = "", lastAn = "", lastMy = "";
+function setHTML(id, html, slot) {
+  if (slot === html) return slot;
+  $(id).innerHTML = html;
+  return html;
+}
+function updateReadouts() {
+  const titles = [
+    "จำนวนนิวเคลียส N และกัมมันตภาพ A เทียบกับเวลา",
+    "พลังงานยึดเหนี่ยวต่อนิวคลีออน เทียบกับเลขมวล",
+    state.kind === "fission" ? "พลังงานฟิชชันและนิวตรอนอิสระเทียบกับเวลา" : "พลังงานฟิวชันสะสมเทียบกับเวลา",
+    "ประจุของควาร์กในอนุภาคที่สร้าง"
+  ];
+  $("chartTitle").textContent = titles[state.mode - 1];
+  let eq = "", an = "", my = "";
+  if (state.mode === 1) ({ eq, an, my } = readDecay());
+  else if (state.mode === 2) ({ eq, an, my } = readBind());
+  else if (state.mode === 3) ({ eq, an, my } = readReact());
+  else ({ eq, an, my } = readZoo());
+  lastEq = setHTML("equation", eq, lastEq);
+  lastAn = setHTML("analysis", an, lastAn);
+  lastMy = setHTML("myth", my, lastMy);
+}
+function readDecay() {
+  const def = DECAYS[state.decayType];
+  const lambda = Math.LN2 / state.half;
+  const N = aliveCount();
+  const theory = state.N0 * Math.pow(0.5, decay.t / state.half);
+  const A = lambda * N;
+  const recent = decay.events.filter((t) => decay.t - t <= 1);
+  const Am = decay.t <= 0 ? 0 : recent.length / Math.min(1, decay.t);
+  const parent = nucleusInfo(def.parent);
+  const q = decayQ(def);
+  const halves = decay.t / state.half;
+  setCard(0, "นิวเคลียสที่เหลือ N", String(N), "จาก " + state.N0 + " ตัว");
+  setCard(1, "กัมมันตภาพ A", fmt(A, 2) + " Bq", "นับได้ช่วงล่าสุด " + fmt(Am, 2) + " Bq");
+  setCard(2, "ส่วนพร่องมวลของแม่ Δm", fmtU(parent.dm) + " u", def.parent.sym + "-" + def.parent.A);
+  setCard(3, "พลังงานยึดเหนี่ยวของแม่", fmtE(parent.BE) + " MeV", "คนละค่ากับ Q ของการสลาย");
+  setCard(4, "Q ของการสลายนี้", fmtE(q.Q) + " MeV", fmtJ(q.Q));
+  const eq = `<b>กฎการสลาย</b><br>
+    N(t) = N₀ e<sup>−λt</sup> = N₀ (1/2)<sup>t/T½</sup><br>
+    λ = ln 2 / T<sub>½</sub> = 0.693 / ${fmt(state.half, 1)} = ${fmt(lambda, 4)} s⁻¹<br>
+    N ทฤษฎี = ${fmt(theory, 1)} · N จากการสุ่ม = ${N} · A = λN = ${fmt(A, 2)} Bq<br>
+    <b>ตัวอย่างนิวไคลด์</b> ${isoHTML(def.parent.sym, def.parent.A, def.parent.Z)} → ${isoHTML(def.daughter.sym, def.daughter.A, def.daughter.Z)}
+    ${def.emits.map((e) => " + " + isoHTML(e.sym, e.A, e.Z)).join("")}
+    ${state.decayType === "betam" ? " + e⁻ + แอนตินิวตริโน" : ""}
+    ${state.decayType === "betap" ? " + e⁺ + นิวตริโน" : ""}
+    ${state.decayType === "gamma" ? " + γ" : ""}
+    <br>Q = ${state.decayType === "gamma" ? "พลังงานโฟตอน" : state.decayType === "betap" ? "(m<sub>แม่</sub> − m<sub>ลูก</sub> − 2m<sub>e</sub>) × 931.5" : "(m<sub>ตั้งต้น</sub> − m<sub>ผลิตภัณฑ์</sub>) × 931.5"} = ${fmtE(q.Q)} MeV`;
+  const an = `<b>สิ่งที่ควรเห็น</b><br>${def.blurb}<br>
+    ครึ่งชีวิตจริงของตัวอย่างนี้: ${def.realHalf} ในจอใช้ T<sub>½</sub> = ${fmt(state.half, 1)} s เพื่อให้เห็นเส้นโค้งทันตา<br>
+    ผ่านไป ${fmt(halves, 2)} ครึ่งชีวิต เหลือ ${(N / state.N0 * 100).toFixed(1)}% (ทฤษฎี ${(theory / state.N0 * 100).toFixed(1)}%)<br>
+    อัลฟาไปได้ไม่ไกล บีตาไปได้ไกลกว่า แกมมาและนิวตริโนพุ่งทะลุ แผ่นกั้นแต่ละชนิดหยุดคนละชนิด`;
+  let my = "ความเข้าใจที่พบบ่อยคือพอครบ 2 ครึ่งชีวิตสารจะหมด 100% ความจริงเหลือประมาณ 25% เพราะแต่ละนิวเคลียสสลายแบบสุ่ม ภาพรวมจึงเป็นเส้นโค้งเอ็กซ์โพเนนเชียล ไม่ได้หมดเป็นขั้น";
+  if (decay.contaminated) my = "วัตถุนี้ปนเปื้อนเพราะมีสารกัมมันตรังสีอยู่บนมัน การปนเปื้อนเกิดเมื่อสารรังสีไปติด ถูกสูด หรือถูกกลืน ต่างจากการถูกยิงด้วยรังสี";
+  else if (decay.irradiations > 0) my = "วัตถุตัวอย่างถูกยิงด้วยรังสีแล้ว " + decay.irradiations + " ครั้ง แต่ยังไม่กลายเป็นสารรังสี การได้รับรังสีเหมือนถูกไฟฉายส่อง จะปนเปื้อนก็ต่อเมื่อมีสารรังสีไปอยู่บนหรือในวัตถุ";
+  else if (N === 0 && state.N0 <= 200) my = "รอบนี้สุ่มจนไม่เหลือนิวเคลียส เพราะจำนวนตั้งต้นน้อย ตัวสุดท้ายสลายได้ ทั้งที่เส้นทฤษฎียังไม่ถึงศูนย์ที่เวลาจำกัด ลองตั้ง N₀ = 1,000 แล้วดูที่ 2 ครึ่งชีวิต จะเหลือใกล้ 25%";
+  else if (halves >= 2 && N > 0) my = "ตอนนี้ผ่าน " + fmt(halves, 2) + " ครึ่งชีวิต ยังเหลือ " + N + " ตัว คิดเป็น " + (N / state.N0 * 100).toFixed(1) + "% ไม่ได้หาย 100% ที่ 2 ครึ่งชีวิตทฤษฎีคือ 25%";
+  return { eq, an, my };
+}
+function readBind() {
+  const iso = findIso(state.isoId);
+  const info = nucleusInfo(iso);
+  const st = stability(iso);
+  setCard(0, "จำนวนนิวตรอน N", String(st.N), "N = A − Z");
+  setCard(1, "เลขมวล A", String(iso.A), "นิวคลีออนทั้งหมด");
+  setCard(2, "ส่วนพร่องมวล Δm", fmtU(info.dm) + " u", fmt(info.dm * 1.6605e-27, 3) === "NaN" ? "" : (info.dm * 1.6605e-27).toExponential(2) + " kg");
+  setCard(3, "พลังงานยึดเหนี่ยว BE", fmtE(info.BE) + " MeV", fmtJ(info.BE));
+  setCard(4, "BE ต่อนิวคลีออน", iso.A === 1 ? "0" : fmt(info.BEa, 3), "MeV ต่อนิวคลีออน");
+  const eq = `<b>รัศมีและพลังงานยึดเหนี่ยว</b><br>
+    R = R₀ A<sup>1/3</sup> = 1.2 × ${iso.A}<sup>1/3</sup> = ${info.R.toFixed(2)} fm = ${(info.R * 1e-15).toExponential(2)} m<br>
+    m<sub>nucleus</sub> ≈ m<sub>atom</sub> − Z m<sub>e</sub> = ${fmtU(info.mNuc)} u<br>
+    Δm = [Z m<sub>p</sub> + (A−Z) m<sub>n</sub>] − m<sub>nucleus</sub><br>
+    = [${iso.Z}×1.007276 + ${iso.A - iso.Z}×1.008665] − ${fmtU(info.mNuc)} = ${fmtU(info.dm)} u<br>
+    BE = Δm × 931.5 = ${fmtE(info.BE)} MeV · BE/A = ${iso.A === 1 ? "0" : fmt(info.BEa, 3)} MeV`;
+  let note = st.band + " อัตราส่วน N/Z = " + (iso.Z ? st.ratio.toFixed(3) : "—") + " เลขโปรตอนใกล้หุบเสถียรโดยประมาณคือ Z ≈ " + st.zS + ".";
+  if (iso.id === "Fe-56") note += " เหล็ก-56 อยู่ที่ยอดของเส้นโค้งตามหลักสูตร จึงเสถียรมาก.";
+  if (iso.id === "Ni-62") note += " ในข้อมูลจริงนิกเกิล-62 มี BE/A สูงกว่าเหล็ก-56 เล็กน้อย ทั้งคู่อยู่บริเวณเสถียรที่สุด.";
+  if (iso.id === "He-4") note += " ฮีเลียม-4 ยึดแน่นผิดปกติเมื่อเทียบกับนิวเคลียสเบาอื่น จึงมักหลุดออกมาเป็นอนุภาคแอลฟา.";
+  if (iso.id === "U-235") note += " ยูเรเนียม-235 จับนิวตรอนช้าแล้วแตกได้ จึงเป็นเชื้อเพลิงฟิชชัน.";
+  if (iso.id === "C-14") note += " คาร์บอน-14 สลายแบบ β⁻ ครึ่งชีวิตจริง 5,730 ปี ใช้หาอายุวัตถุโบราณ.";
+  const an = `<b>${iso.name}</b> ${isoHTML(iso.sym, iso.A, iso.Z)}<br>${note}<br>
+    นิวเคลียสเล็กกว่าอะตอมทั้งก้อนมาก ภาพนี้ขยายเฉพาะแกนกลาง แรงนิวเคลียร์ดึงทุกนิวคลีออนแต่ระยะสั้นมาก แรงคูลอมบ์ผลักเฉพาะโปรตอนและไปได้ไกล`;
+  let my = "โปรตอนและนิวตรอนในภาพไม่ใช่อนุภาคพื้นฐาน เปิดสวิตช์ควาร์กจะเห็นว่าโปรตอนคือ uud และนิวตรอนคือ udd";
+  if (iso.A >= 180) my = "นิวเคลียสหนักมี BE/A ต่ำกว่าเหล็ก เพราะโปรตอนจำนวนมากผลักกันด้วยแรงคูลอมบ์ การฟิชชันไปเป็นนิวเคลียสขนาดกลางจึงคายพลังงาน ไม่ใช่เพราะธาตุหนักมีพลังงานยึดเหนี่ยวเป็นศูนย์";
+  else if (iso.A > 1 && iso.A < 20) my = "นิวเคลียสเบามี BE/A ต่ำกว่าบริเวณเหล็ก การฟิวชันแล้วไต่ขึ้นไปบนกราฟจึงคายพลังงาน ฮีเลียม-4 เป็นข้อยกเว้นที่ยึดแน่นเป็นพิเศษ";
+  else if (iso.A >= 50 && iso.A <= 70) my = "บริเวณเหล็ก–นิกเกิลคือยอดกราฟ BE/A นิวเคลียสกลุ่มนี้เสถียรที่สุด ทั้งฟิวชันของธาตุเบาและฟิชชันของธาตุหนักต่างปล่อยพลังงานเพราะผลิตภัณฑ์เข้าใกล้ยอดนี้";
+  return { eq, an, my };
+}
+function readReact() {
+  if (state.kind === "fusion") return readFusion();
+  const fuel = FISSION[state.fuelId];
+  const ch = fission.last ? fission.last.ch : fuel.channels[0];
+  const q = fission.last ? fission.last.q : channelQ(fuel, ch);
+  const left = fission.fuel.filter((f) => f.alive).length;
+  setCard(0, "เชื้อเพลิงที่เหลือ", String(left), "จาก " + fission.fuel.length + " นิวเคลียส");
+  setCard(1, "นิวตรอนอิสระ", String(fission.neutrons.length), "ครั้งฟิชชันสะสม " + fission.count);
+  setCard(2, "ส่วนพร่องมวลของปฏิกิริยา", fmtU(q.dm) + " u", "ของช่องทางล่าสุด");
+  setCard(3, "พลังงานสะสม", fmtE(fission.energy) + " MeV", fmtJ(fission.energy));
+  setCard(4, "Q ต่อครั้ง", fmtE(q.Q) + " MeV", "ค่าเฉลี่ยทั้งกระบวนการจริงราว 200 MeV");
+  const eq = `<b>ฟิชชัน</b> ${isoHTML(fuel.sym, fuel.A, fuel.Z)} + ${isoHTML("n", 1, 0)} → ${isoHTML(ch.a.sym, ch.a.A, ch.a.Z)} + ${isoHTML(ch.b.sym, ch.b.A, ch.b.Z)} + ${ch.neutrons} ${isoHTML("n", 1, 0)}<br>
+    Q = (m<sub>ตั้งต้น</sub> − m<sub>ผลิตภัณฑ์</sub>) × 931.5 = ${fmtU(q.dm)} × 931.5 = ${fmtE(q.Q)} MeV<br>
+    พลังงานก้อนนี้เป็นพลังงานจลน์ของชิ้นส่วนและนิวตรอน ผลิตภัณฑ์ยังสลายต่อได้อีก จึงมีพลังงานตามมาภายหลัง<br>
+    นิวตรอนเฉลี่ยต่อครั้งของ ${fuel.sym}-${fuel.A} ในเครื่องปฏิกรณ์จริง ${fuel.nu} ช่องทางบนจอปล่อย ${ch.neutrons} ตัวให้ตรงสมการ`;
+  const an = `<b>${critLabel()}</b><br>
+    แท่งควบคุมตอนนี้สอด ${state.control}% แท่งแคดเมียมหรือโบรอนดูดกลืนนิวตรอน ส่วนน้ำในภาพเป็นตัวหน่วงที่ทำให้นิวตรอนช้าลง คนละหน้าที่กัน<br>
+    ถ้านิวตรอนที่เหลือจากการฟิชชันไปแตกนิวเคลียสถัดไปได้เรื่อย ๆ เรียกปฏิกิริยาลูกโซ่ ค่า Q บวกเพราะมวลผลิตภัณฑ์น้อยกว่ามวลตั้งต้น`;
+  let my = "ตัวหน่วงนิวตรอนไม่ใช่แท่งควบคุม ตัวหน่วงชะลอนิวตรอนให้ยูเรเนียม-235 จับได้ แท่งควบคุมดูดนิวตรอนทิ้งเพื่อลดอัตราการเกิดลูกโซ่";
+  if (state.control < 20 && fission.neutrons.length > 4) my = "ตอนนี้ลูกโซ่กำลังขยายเพราะนิวตรอนจากการแตกไปชนนิวเคลียสอื่นต่อ ได้พลังงานเพิ่มเร็ว ลองเลื่อนแท่งควบคุมขึ้นแล้วดูจำนวนนิวตรอนอิสระบนกราฟ";
+  return { eq, an, my };
+}
+function readFusion() {
+  const fx = FUSION[state.fusId];
+  const q = fusionQ(fx);
+  setCard(0, "จำนวนครั้งที่หลอม", String(fusion.count), fx.name);
+  setCard(1, "Q ต่อครั้ง", fmtE(q.Q) + " MeV", fmtJ(q.Q));
+  setCard(2, "ส่วนพร่องมวล Δm", fmtU(q.dm) + " u", "มวลตั้งต้นมากกว่าผลิตภัณฑ์");
+  setCard(3, "พลังงานสะสม", fmtE(fusion.energy) + " MeV", fmtJ(fusion.energy));
+  setCard(4, "ผลิตภัณฑ์", fx.A.tag + " + " + fx.B.tag, "มวลเบารวมกัน");
+  const eq = `<b>ฟิวชัน</b> ${isoHTML(fx.L.sym, fx.L.A, fx.L.Z)} + ${isoHTML(fx.R.sym, fx.R.A, fx.R.Z)} → ${isoHTML(fx.A.sym, fx.A.A, fx.A.Z)} + ${isoHTML(fx.B.sym, fx.B.A, fx.B.Z)}<br>
+    Q = (${fmtU(fx.L.mass)} + ${fmtU(fx.R.mass)} − ${fmtU(fx.A.mass)} − ${fmtU(fx.B.mass)}) × 931.5<br>
+    = ${fmtU(q.dm)} × 931.5 = ${fmtE(q.Q)} MeV<br>
+    ปฏิกิริยา D+T ให้พลังงานต่อครั้งสูงที่สุดในสามตัวเลือกนี้ และเป็นแนวที่ใช้ในเครื่องฟิวชันทดลอง`;
+  const an = `<b>ทำไมนิวเคลียสเบาจึงหลอมยาก</b><br>
+    ทั้งสองฝั่งมีประจุบวก จึงผลักกันด้วยแรงคูลอมบ์ ต้องเข้าใกล้กันระดับเฟมโตเมตรแรงนิวเคลียร์ระยะสั้นจึงจะดึงรวม ค่า Q เป็นบวกเพราะผลิตภัณฑ์อยู่สูงกว่าบนกราฟ BE/A<br>
+    บนดาวฤกษ์ความร้อนและความดันสูงมากช่วยชนะกำแพงคูลอมบ์ ในแบบจำลองนี้ปุ่มเล่นคือการบังคับให้รวมกัน`;
+  const my = "ฟิวชันไม่ใช่การที่อะตอมไฮโดรเจนมาชนกันที่เปลือกอิเล็กตรอน แต่เป็นนิวเคลียสที่เข้าใกล้กันจนแรงนิวเคลียร์เอาชนะแรงผลักคูลอมบ์ ผลิตภัณฑ์หนักขึ้นและมีพลังงานยึดเหนี่ยวต่อนิวคลีออนสูงขึ้น";
+  return { eq, an, my };
+}
+function readZoo() {
+  const idn = identifySlots();
+  const list = slotList();
+  setCard(0, "ชนิด", idn.kind, idn.ok ? "ประกอบได้" : "ยังไม่ครบหรือไม่เข้าชุด");
+  setCard(1, "ประจุรวม", list.length ? fmtCharge(idn.charge) : "—", idn.terms || "วางควาร์กก่อน");
+  setCard(2, "เลขแบริออน", list.length ? fmtB(idn.baryon) : "—", "ควาร์กตัวละ 1/3");
+  setCard(3, "สปิน", idn.spin, "สถานะที่พบได้");
+  setCard(4, "จำนวนควาร์กในช่อง", String(list.length), state.hadron === "meson" ? "เมซอนใช้ 2" : "แบริออนใช้ 3");
+  let eq = `<b>ประจุควาร์ก</b> อัพ = +2/3 · ดาวน์ = −1/3<br>โปรตอน uud: (+2/3) + (+2/3) + (−1/3) = +1<br>นิวตรอน udd: (+2/3) + (−1/3) + (−1/3) = 0`;
+  if (list.length) eq += `<br><b>ชุดที่วางอยู่</b> ${idn.title}<br>${idn.detail}`;
+  if (beta.on) eq += `<br><b>กำลังแสดงการสลาย β⁻</b> ควาร์ก d → u + W⁻ แล้ว W⁻ → e⁻ + แอนตินิวตริโน`;
+  const sm = state.sm;
+  const an = sm
+    ? `<b>${sm.name}</b> ${sm.sym ? "(" + sm.sym + ")" : ""}<br>${sm.note}`
+    : `<b>เฟอร์มิออนและโบซอน</b><br>ควาร์กกับเลปตอนเป็นเฟอร์มิออนสปิน 1/2 มี 3 รุ่น โบซอนนำแรง: กลูออนนำแรงเข้ม โฟตอนนำแรงแม่เหล็กไฟฟ้า W กับ Z นำแรงอ่อน ฮิกส์เกี่ยวกับมวล<br>แฮดรอนมีสองแบบ แบริออนเช่นโปรตอนกับนิวตรอนมี 3 ควาร์ก เมซอนมีควาร์กคู่กับปฏิควาร์ก`;
+  let my = "โปรตอนและนิวตรอนไม่ใช่อนุภาคพื้นฐานที่แบ่งต่อไม่ได้ แต่ละตัวประกอบจากควาร์ก 3 ตัว โปรตอนคือ uud นิวตรอนคือ udd";
+  if (beta.on) my = "การสลายบีตาลบไม่ใช่นิวตรอนแตกออกเป็นโปรตอนกับอิเล็กตรอนที่ซ่อนอยู่เดิม แต่ควาร์ก d เปลี่ยนเป็นควาร์ก u ผ่านแรงอย่างอ่อน แล้วโบซอน W⁻ จึงเกิดเป็นอิเล็กตรอนกับแอนตินิวตริโน";
+  else if (idn.ok && idn.kind.startsWith("เมซอน")) my = "เมซอนไม่ใช่ก้อนของโปรตอนกับนิวตรอน แต่เป็นควาร์กหนึ่งตัวจับกับปฏิควาร์กหนึ่งตัว เช่น ไพออนบวกคืออัพคู่กับปฏิดาวน์";
+  return { eq, an, my };
+}
+
+function renderPalette() {
+  const box = $("palette");
+  box.innerHTML = "";
+  Object.keys(QUARKS).forEach((f) => {
+    addQuarkButton(box, f);
+    if (state.showAnti) addQuarkButton(box, "~" + f);
+  });
+}
+function addQuarkButton(box, id) {
+  const q = quarkObj(id);
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = (q.anti ? "ปฏิ" : "") + q.f;
+  b.dataset.q = id;
+  b.style.background = q.color;
+  b.style.color = "#1a0b10";
+  b.draggable = true;
+  if (state.picked === id) b.classList.add("on");
+  b.addEventListener("click", () => {
+    state.picked = state.picked === id ? null : id;
+    renderPalette();
+  });
+  b.addEventListener("dragstart", (ev) => ev.dataTransfer.setData("text/plain", id));
+  box.appendChild(b);
+}
+function renderSlots() {
+  const box = $("slots");
+  box.innerHTML = "";
+  const n = state.hadron === "meson" ? 2 : 3;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("div");
+    s.className = "slot";
+    s.dataset.slot = String(i);
+    const q = state.slots[i];
+    if (q) {
+      s.textContent = (q.anti ? "ปฏิ" : "") + q.f + "  " + fmtCharge(q.q);
+      s.style.background = q.color;
+      s.style.color = "#1a0b10";
+    } else s.textContent = "ช่อง " + (i + 1);
+    s.addEventListener("click", () => {
+      if (state.picked) {
+        state.slots[i] = quarkObj(state.picked);
+        state.picked = null;
+        renderPalette();
+      } else state.slots[i] = null;
+      renderSlots();
+      renderResult();
+    });
+    s.addEventListener("dragover", (ev) => { ev.preventDefault(); s.classList.add("over"); });
+    s.addEventListener("dragleave", () => s.classList.remove("over"));
+    s.addEventListener("drop", (ev) => {
+      ev.preventDefault();
+      const id = ev.dataTransfer.getData("text/plain");
+      if (id) state.slots[i] = quarkObj(id);
+      renderSlots();
+      renderResult();
+    });
+    box.appendChild(s);
+  }
+  renderResult();
+}
+function renderResult() {
+  const idn = identifySlots();
+  $("buildResult").innerHTML = "<b>" + idn.title + "</b><br>" + idn.detail;
+}
+function placePreset(ids, hadron) {
+  state.hadron = hadron;
+  state.slots = [null, null, null];
+  ids.forEach((id, i) => { state.slots[i] = quarkObj(id); });
+  $("btnBaryon").classList.toggle("on", hadron === "baryon");
+  $("btnMeson").classList.toggle("on", hadron === "meson");
+  beta.on = false;
+  renderSlots();
+}
+function buildSM() {
+  const grid = $("smGrid");
+  grid.innerHTML = "";
+  const head = ["", "รุ่นที่ 1", "รุ่นที่ 2", "รุ่นที่ 3"];
+  head.forEach((t) => { const d = document.createElement("div"); d.className = "hd"; d.textContent = t; grid.appendChild(d); });
+  const rows = [
+    ["ควาร์ก", ["u", "d"], ["c", "s"], ["t", "b"]],
+    ["เลปตอน", ["e", "nue"], ["mu", "numu"], ["tau", "nutau"]]
+  ];
+  rows.forEach((row) => {
+    const lab = document.createElement("div"); lab.className = "hd"; lab.textContent = row[0]; grid.appendChild(lab);
+    for (let g = 0; g < 3; g++) {
+      const cell = document.createElement("div");
+      row[g + 1].forEach((id) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        if (QUARKS[id]) {
+          const q = QUARKS[id];
+          btn.innerHTML = q.f + "<small>" + q.name + " " + fmtCharge(q.q) + "</small>";
+          btn.addEventListener("click", () => selectSM({ name: "ควาร์ก" + q.name, sym: q.f, note: "เฟอร์มิออนสปิน 1/2 ประจุ " + fmtCharge(q.q) + " มวลประมาณ " + q.mass + " ไม่พบควาร์กเดี่ยว ๆ เพราะแรงเข้มกักขังมันไว้ในแฮดรอน" }));
+        } else {
+          const L = LEPTONS.find((x) => x.id === id);
+          btn.innerHTML = L.sym + "<small>" + L.name + "</small>";
+          btn.addEventListener("click", () => selectSM(L));
+        }
+        cell.appendChild(btn);
+      });
+      grid.appendChild(cell);
+    }
+  });
+  const labB = document.createElement("div"); labB.className = "hd"; labB.textContent = "โบซอน"; grid.appendChild(labB);
+  const span = document.createElement("div");
+  span.style.gridColumn = "span 3";
+  span.style.display = "flex";
+  span.style.flexWrap = "wrap";
+  span.style.gap = "4px";
+  BOSONS.forEach((b) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerHTML = b.sym + "<small>" + b.name + "</small>";
+    btn.addEventListener("click", () => selectSM(b));
+    span.appendChild(btn);
+  });
+  grid.appendChild(span);
+}
+function selectSM(p) {
+  state.sm = p;
+  document.querySelectorAll(".sm button").forEach((b) => b.classList.remove("on"));
+  lastAn = "";
+}
+function syncIsoSelect() {
+  $("isoSelect").value = state.isoId;
+  document.querySelectorAll("#presets button").forEach((b) => b.classList.toggle("on", b.dataset.id === state.isoId));
+}
+function syncVisibility() {
+  document.body.dataset.mode = String(state.mode);
+  document.querySelectorAll("[data-modebtn]").forEach((b) => b.classList.toggle("on", Number(b.dataset.modebtn) === state.mode));
+  $("grp1").hidden = state.mode !== 1;
+  $("grp2").hidden = state.mode !== 2;
+  $("grp3").hidden = state.mode !== 3;
+  $("zoo").hidden = state.mode !== 4;
+  const fissionOn = state.mode === 3 && state.kind === "fission";
+  $("fuelWrap").hidden = !fissionOn;
+  $("rodWrap").hidden = !fissionOn;
+  $("fireBtn").hidden = !fissionOn;
+  $("fusWrap").hidden = !(state.mode === 3 && state.kind === "fusion");
+  $("btnFission").classList.toggle("on", state.kind === "fission");
+  $("btnFusion").classList.toggle("on", state.kind === "fusion");
+  const helps = [
+    "แต่ละนิวเคลียสมีโอกาสสลายในแต่ละช่วงเวลาไม่เท่ากันแบบสุ่ม ภาพรวมจึงโค้งลงแบบเอ็กซ์โพเนนเชียล",
+    "เลือกนิวเคลียสแล้วดูส่วนพร่องมวล พลังงานยึดเหนี่ยว รัศมี และตำแหน่งบนกราฟ BE/A",
+    "ยิงนิวตรอนใส่เชื้อเพลิงหนัก หรือบังคับนิวเคลียสไฮโดรเจนให้หลอมรวม แล้วอ่านค่า Q",
+    "ควาร์ก เลปตอน และโบซอนคืออนุภาคมูลฐาน ลองประกอบโปรตอน นิวตรอน และเมซอน"
+  ];
+  $("modeHelp").textContent = helps[state.mode - 1];
+  lastEq = ""; lastAn = ""; lastMy = "";
+}
+
+function loop(ts) {
+  if (!lastTs) lastTs = ts;
+  let dt = (ts - lastTs) / 1000;
+  lastTs = ts;
+  if (dt > 0.05) dt = 0.05;
+  visT += dt;
+  const sdt = state.playing ? dt * state.speed : 0;
+  if (state.mode === 1) stepDecay(sdt);
+  if (state.mode === 3 && state.kind === "fission") stepFission(sdt);
+  if (state.mode === 3 && state.kind === "fusion") stepFusion(sdt);
+  if (state.mode === 4 && beta.on) stepBeta(sdt);
+  const sim = fit($("sim"));
+  worldTransform(sim.ctx, sim.w, sim.h);
+  if (state.mode === 1) drawDecay(sim.ctx);
+  else if (state.mode === 2) drawBinding(sim.ctx);
+  else if (state.mode === 3 && state.kind === "fission") drawFission(sim.ctx);
+  else if (state.mode === 3) drawFusion(sim.ctx);
+  else drawZoo(sim.ctx);
+  drawChart();
+  updateReadouts();
+  requestAnimationFrame(loop);
+}
+
+function init() {
+  const sel = $("isoSelect");
+  ISOTOPES.forEach((iso) => {
+    const o = document.createElement("option");
+    o.value = iso.id;
+    o.textContent = iso.name + "  (" + iso.sym + "-" + iso.A + ")";
+    sel.appendChild(o);
+  });
+  sel.value = state.isoId;
+  ["H-1", "He-4", "C-12", "Fe-56", "I-131", "U-235", "Pu-239"].forEach((id) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.id = id;
+    b.textContent = id;
+    b.addEventListener("click", () => { state.isoId = id; syncIsoSelect(); });
+    $("presets").appendChild(b);
+  });
+  syncIsoSelect();
+  const qp = [
+    ["โปรตอน", ["u", "u", "d"], "baryon"],
+    ["นิวตรอน", ["u", "d", "d"], "baryon"],
+    ["ไพออน +", ["u", "~d"], "meson"],
+    ["ไพออน −", ["d", "~u"], "meson"],
+    ["ล้าง", [], "baryon"]
+  ];
+  qp.forEach(([label, ids, hadron]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.addEventListener("click", () => placePreset(ids, hadron));
+    $("presetQs").appendChild(b);
+  });
+  buildSM();
+  renderPalette();
+  renderSlots();
+  resetDecay();
+  resetFission();
+  resetFusion();
+  syncVisibility();
+
+  document.querySelectorAll("[data-modebtn]").forEach((b) => b.addEventListener("click", () => {
+    state.mode = Number(b.dataset.modebtn);
+    syncVisibility();
+  }));
+  document.querySelectorAll("[data-speed]").forEach((b) => b.addEventListener("click", () => {
+    state.speed = Number(b.dataset.speed);
+    document.querySelectorAll("[data-speed]").forEach((x) => x.classList.toggle("on", x === b));
+  }));
+  $("play").addEventListener("click", () => {
+    state.playing = true;
+    if (state.mode === 3 && state.kind === "fission" && fission.neutrons.length === 0 && fission.count === 0) fireNeutron();
+    if (state.mode === 4) { beta.on = true; if (beta.t > 7) beta.t = 0; }
+  });
+  $("pause").addEventListener("click", () => { state.playing = false; });
+  $("reset").addEventListener("click", () => { state.playing = false; resetCurrent(); });
+  $("n0").addEventListener("input", () => { $("n0Out").textContent = $("n0").value; });
+  $("n0").addEventListener("change", () => { state.N0 = Number($("n0").value); resetDecay(); });
+  $("th").addEventListener("input", () => { $("thOut").textContent = Number($("th").value).toFixed(1); });
+  $("th").addEventListener("change", () => { state.half = Number($("th").value); resetDecay(); });
+  $("decayType").addEventListener("change", () => { state.decayType = $("decayType").value; resetDecay(); });
+  $("shield").addEventListener("change", () => { state.shield = $("shield").value; });
+  $("contamBtn").addEventListener("click", () => {
+    decay.contaminated = !decay.contaminated;
+    $("contamBtn").textContent = decay.contaminated ? "ทำความสะอาดวัตถุ" : "วางสารรังสีบนวัตถุ";
+    lastMy = "";
+  });
+  $("isoSelect").addEventListener("change", () => { state.isoId = $("isoSelect").value; syncIsoSelect(); });
+  $("showQuarks").addEventListener("change", () => { state.showQuarks = $("showQuarks").checked; });
+  $("showRays").addEventListener("change", () => { state.showRays = $("showRays").checked; });
+  $("btnFission").addEventListener("click", () => { state.kind = "fission"; syncVisibility(); });
+  $("btnFusion").addEventListener("click", () => { state.kind = "fusion"; if (fusion.history.length < 2) resetFusion(); syncVisibility(); });
+  $("fuelSelect").addEventListener("change", () => { state.fuelId = $("fuelSelect").value; resetFission(); });
+  $("fusSelect").addEventListener("change", () => { state.fusId = $("fusSelect").value; resetFusion(); });
+  $("rod").addEventListener("input", () => { state.control = Number($("rod").value); $("rodOut").textContent = $("rod").value; });
+  $("fireBtn").addEventListener("click", () => { state.playing = true; fireNeutron(); });
+  $("btnBaryon").addEventListener("click", () => { state.hadron = "baryon"; $("btnBaryon").classList.add("on"); $("btnMeson").classList.remove("on"); renderSlots(); });
+  $("btnMeson").addEventListener("click", () => { state.hadron = "meson"; state.slots[2] = null; $("btnMeson").classList.add("on"); $("btnBaryon").classList.remove("on"); renderSlots(); });
+  $("antiToggle").addEventListener("change", () => { state.showAnti = $("antiToggle").checked; renderPalette(); });
+  $("betaBtn").addEventListener("click", () => { beta.on = true; beta.t = 0; state.playing = true; state.mode = 4; syncVisibility(); });
+  $("chart").addEventListener("click", (ev) => {
+    if (state.mode !== 2) return;
+    const rect = $("chart").getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const b = chartBox(rect.width, rect.height);
+    const A = ((x - b.l) / b.iw) * 250;
+    let best = null, bd = 1e9;
+    for (const iso of ISOTOPES) {
+      const d = Math.abs(iso.A - A);
+      if (d < bd) { bd = d; best = iso; }
+    }
+    if (best && bd < 12) { state.isoId = best.id; syncIsoSelect(); }
+  });
+  requestAnimationFrame(loop);
+}
+init();
+</script>
+</body>
+</html>
